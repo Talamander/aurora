@@ -71,7 +71,7 @@ export interface ActorRunResult {
   error?: string;
   requests: ProxyLogEntry[];
   durationMs: number;
-  isolation: 'bwrap' | 'none';
+  isolation: 'bwrap' | 'seatbelt' | 'none';
   exitCode?: number | null;
   truncated?: boolean;
 }

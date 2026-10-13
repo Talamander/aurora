@@ -81,7 +81,7 @@ brew install yt-dlp                 # keep a copy of videos from posts you save
 brew install choose-gui             # `aurora pick`, a Spotlight-style post picker
 ```
 
-Everything works on macOS except connectors the AI writes for you: those need a sandbox, and on a Mac Aurora refuses to run them unprotected. Run Aurora in Docker (below) to get them. Details and troubleshooting: [docs/macos.md](docs/macos.md).
+Everything works on macOS. Connectors the AI writes for you run in macOS's built-in Seatbelt sandbox; Docker (below) gives you the stronger Linux sandbox instead. Details and troubleshooting: [docs/macos.md](docs/macos.md).
 
 ## Run it on Linux
 
@@ -341,7 +341,7 @@ Connectors implement a versioned interface (`server/connectors/types.ts`). Every
 - **Your browser stays yours.** No browser cookies or passwords are ever read. Signed-in sources use Aurora's own browser profile, and you sign in yourself.
 - **Untrusted content stays data.** Imported posts and fetched pages are wrapped and labelled as untrusted in every AI prompt. HTML becomes plain text on ingest, and links are shown only when they are `http(s)`.
 - **Safe fetching.** Server-side fetches refuse private, loopback and link-local addresses at connect time and on every redirect, with timeouts and size caps. Images load through a local proxy that only fetches URLs already in your library.
-- **Sandboxed AI code.** AI-built connectors run in bubblewrap with no access to your files and network only through an egress proxy. Where no sandbox exists (macOS, Windows), they do not run. AI widgets render in a sandboxed iframe with no network.
+- **Sandboxed AI code.** AI-built connectors run in bubblewrap with no access to your files and network only through an egress proxy. On macOS they run under Seatbelt instead. Where no sandbox exists (Windows), they do not run. AI widgets render in a sandboxed iframe with no network.
 - **Hardened web app.** Host and Origin checks on every request, JSON-only writes, a strict Content-Security-Policy, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and capped request bodies.
 - **Secrets stay put.** OAuth tokens and AI keys live in the SQLite `secrets` table (file mode 0600), are never sent to the browser and never logged.
 - **No evasion.** No CAPTCHA solving, bot-detection evasion or fingerprint rotation.
@@ -358,7 +358,7 @@ More: [docs/security.md](docs/security.md).
 | `AUTO_SYNC_MINUTES` | `30` | Background sync interval for free feeds; `0` turns it off. Paid sources (X) only sync by hand. |
 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | unset | Optional AI provider fallback. A key in AI settings wins; a local Claude Code login or a local OpenAI-compatible model also works. |
 | `X_CLIENT_ID` / `X_CLIENT_SECRET` / `X_REDIRECT_URI` | unset | Your own X developer app, for live X bookmarks |
-| `SR_ACTOR_ISOLATION` | `auto` | Sandbox for AI-built connectors. Linux uses bubblewrap; macOS and Windows refuse to run them. `none` runs them unsandboxed (not recommended). |
+| `SR_ACTOR_ISOLATION` | `auto` | Sandbox for AI-built connectors. Linux uses bubblewrap, macOS Seatbelt; Windows refuses to run them. `none` runs them unsandboxed (not recommended). |
 | `CHROMIUM_PATH` | auto-detected | Browser for signed-in sources (Chrome, Chromium, Brave or Edge) |
 | `YT_DLP` | auto-detected | Used to keep videos of saved posts |
 | `SR_ALLOWED_HOSTS` | unset | Extra `Host` headers to accept, for a reverse proxy |

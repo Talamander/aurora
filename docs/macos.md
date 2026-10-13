@@ -1,9 +1,8 @@
 # Aurora on macOS
 
 Aurora runs on a Mac straight from a clone: the server, the web app, the built-in connectors, the
-AI features, the terminal client and the desktop app all work. The one thing that needs Linux is
-the sandbox for connectors the AI writes for you; on a Mac you get those by running Aurora in
-Docker (see [What works and what does not](#what-works-and-what-does-not)).
+AI features, the terminal client and the desktop app all work, including connectors the AI writes
+for you, which run in macOS's built-in sandbox (see [What works and what does not](#what-works-and-what-does-not)).
 
 Tested by: running the server and the full test suite on Node 22.18+, 24 and 26, unit tests of
 every macOS branch (they take the platform as a parameter, so they run on any OS), and packaging
@@ -111,21 +110,24 @@ Works the same as on Linux:
   `~/Applications` (Aurora uses its own browser profiles and never touches your normal Chrome
   profile). `CHROMIUM_PATH=/path/to/binary` picks a specific one;
 - the desktop app, the terminal client, `aurora pick` (with `choose` or `fzf`), the MCP server and
-  the phone app.
+  the phone app;
+- **connectors the AI writes for you.** On Linux they run inside bubblewrap. On a Mac they run
+  under Seatbelt, the sandbox built into macOS (`/usr/bin/sandbox-exec`), labelled
+  `isolation seatbelt`. The profile (`server/actors/sandbox.ts`) denies everything by default,
+  then allows: reading the system, but not the contents of anything in your home folder except the
+  connector's own folder, its cache, the Node and uv runtimes and uv's Pythons; writing only to
+  the run's temp folder and cache; and one network destination, the egress proxy's port on
+  localhost, so DNS, direct connections and the Aurora server itself are out of reach. The proxy
+  then allows only the hosts the connector declared, as on Linux. Python connectors need `uv`
+  (`brew install uv`). Seatbelt is deprecated by Apple and its profile language is undocumented,
+  and unlike bubblewrap it sets no memory limit; Docker (below) remains the stronger choice.
 
 Does not work straight on macOS:
 
-- **Connectors the AI writes for you.** On Linux they run inside bubblewrap: no access to your
-  files, your keys or any network host they did not declare. macOS has no equivalent that is
-  both solid and small (`sandbox-exec` is deprecated by Apple and its profile language is
-  undocumented), so Aurora refuses to run them rather than run AI-written code unprotected. The
-  Workshop and the source show: "Connectors written by the AI need a sandbox; on macOS run Aurora
-  in Docker (docs/self-hosting.md) or on Linux". Connectors you already have from Linux are kept
-  and run again as soon as Aurora runs somewhere with a sandbox.
 - **Omarchy integration** (Match my desktop theme, the Waybar module) is Linux only. On a Mac
   those settings simply have nothing to read; nothing fails.
 
-To get AI-built connectors on a Mac, run Aurora in Docker, which provides a small Linux VM:
+For bubblewrap instead of Seatbelt, run Aurora in Docker, which provides a small Linux VM:
 
 ```bash
 brew install --cask docker       # Docker Desktop; OrbStack or Colima also work
@@ -135,10 +137,9 @@ docker compose up -d --build     # in the clone; see docs/self-hosting.md
 The compose file already sets the options bubblewrap needs. Check the Workshop after the first
 connector run: it should say `isolation bwrap`.
 
-If you understand the risk and want to run AI-written connectors as ordinary processes on the
-Mac anyway (they could then read your files, including Aurora's stored keys), start Aurora with
-`SR_ACTOR_ISOLATION=none npm start`. Each run is then labelled `isolation: none`. We do not
-recommend it.
+`SR_ACTOR_ISOLATION=none` turns Seatbelt off and runs AI-written connectors as ordinary processes
+(they could then read your files, including Aurora's stored keys). Each run is then labelled
+`isolation: none`. We do not recommend it.
 
 ## Troubleshooting
 

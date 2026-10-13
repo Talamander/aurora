@@ -212,9 +212,12 @@ AI-written or imported connector code runs as a separate process:
   distributions), connectors run as plain processes, labelled `isolation: none`. They still get
   a clean environment and proxy settings, but a malicious connector could read your files and
   open sockets directly. Install bubblewrap, or in Docker keep the compose security options.
-  This fallback exists only on Linux. On macOS and Windows there is no bubblewrap at all, so
-  AI-built connectors refuse to run ("Connectors written by the AI need a sandbox") unless you
-  set `SR_ACTOR_ISOLATION=none` yourself; run Aurora in Docker there instead (docs/macos.md).
+  This fallback exists only on Linux. On macOS connectors run under Seatbelt (`isolation
+  seatbelt`, docs/macos.md): no reading inside your home folder beyond the run's own paths, writes
+  only to its temp folder and cache, and no network except the egress proxy. It is weaker than
+  bubblewrap (no memory or process limits, and Apple has deprecated `sandbox-exec`). On Windows
+  AI-built connectors refuse to run ("Connectors written by the AI need a sandbox") unless you set
+  `SR_ACTOR_ISOLATION=none` yourself.
 - **Prompt injection is reduced, not solved.** A post can still steer the AI within what its
   tools allow: change views, pages and the theme (all local and undoable), or choose URLs for
   tools that fetch (`add_feed`, the connector builder's `http_get`), which could carry data in a

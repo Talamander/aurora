@@ -18,9 +18,9 @@ docker compose up -d --build
 
 Open <http://127.0.0.1:4317>.
 
-On a Mac this is the way to get AI-built connectors: Docker Desktop (or OrbStack, or Colima) runs
-the image in a small Linux VM, and bubblewrap works inside it. Running Aurora straight on macOS is
-fine for everything else; see [macos.md](macos.md).
+On a Mac, Docker Desktop (or OrbStack, or Colima) runs the image in a small Linux VM, and AI-built
+connectors get bubblewrap inside it. Running Aurora straight on macOS works too; connectors then
+use the macOS Seatbelt sandbox, see [macos.md](macos.md).
 
 With Podman, `podman compose up -d --build` works the same way (if it hands off to
 docker-compose, enable the Podman socket first: `systemctl --user enable --now podman.socket`) (see the note on Podman under
@@ -50,7 +50,7 @@ Put these in `.env` next to `docker-compose.yml`:
 | `AUTO_SYNC_MINUTES` | `30` | How often free feeds sync in the background. `0` turns it off. |
 | `ANTHROPIC_API_KEY` | empty | Claude API key, if you prefer the environment over the in-app setting. |
 | `OPENAI_API_KEY` | empty | Key for an OpenAI-compatible endpoint, if it needs one. |
-| `SR_ACTOR_ISOLATION` | `auto` | `auto` uses the bubblewrap sandbox when it works, `none` skips it. On macOS and Windows, where there is no sandbox, AI-built connectors refuse to run unless this is `none`. |
+| `SR_ACTOR_ISOLATION` | `auto` | `auto` uses the bubblewrap sandbox when it works, `none` skips it. On macOS, `auto` uses the Seatbelt sandbox. On Windows, where there is no sandbox, AI-built connectors refuse to run unless this is `none`. |
 
 The server refuses requests whose `Host` header it does not recognise. This protects against
 DNS-rebinding attacks from web pages you visit. Compose already allows `127.0.0.1:<SR_PORT>` and

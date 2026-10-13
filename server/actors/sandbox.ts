@@ -1,5 +1,5 @@
-// Builds the command that runs an actor: bubblewrap when it works here, a plain child
-// process otherwise. Inside bwrap there is no network namespace; the egress proxy's unix
+// Builds the command that runs an actor: bubblewrap when it works here, the macOS Seatbelt
+// sandbox (sandbox-exec) on a Mac, a plain child process otherwise. Inside bwrap there is no network namespace; the egress proxy's unix
 // socket is bound in and sr/launch.mjs bridges it to 127.0.0.1 for HTTP(S)_PROXY.
 //
 // Layout inside the sandbox:
@@ -23,7 +23,9 @@ const TMPFS_BYTES = 256 * 1024 * 1024;
 const MEMORY_MAX = '1536M';
 const TASKS_MAX = 512;
 
-export type Isolation = 'bwrap' | 'none';
+export type Isolation = 'bwrap' | 'seatbelt' | 'none';
+
+const SANDBOX_EXEC = '/usr/bin/sandbox-exec';
 
 export const NEEDS_SANDBOX =
   'Connectors written by the AI need a sandbox; on macOS run Aurora in Docker (docs/self-hosting.md) or on Linux';
@@ -153,7 +155,8 @@ function limits(cmd: string, args: string[], systemdRun: boolean): { cmd: string
 
 export async function buildSandboxCommand(spec: SandboxSpec): Promise<SandboxCommand> {
   const { bwrap, systemdRun } = await detectIsolation();
-  if (!bwrap && !unsandboxedAllowed()) throw new Error(NEEDS_SANDBOX);
+  const seatbelt = !bwrap && seatbeltAvailable();
+  if (!bwrap && !seatbelt && !unsandboxedAllowed()) throw new Error(NEEDS_SANDBOX);
   const uv = which('uv');
   if (spec.manifest.runtime === 'python' && !uv) throw new Error('uv is not installed on the host (needed for python actors)');
   fs.mkdirSync(path.join(spec.cacheDir, 'uv'), { recursive: true });
@@ -195,7 +198,9 @@ export async function buildSandboxCommand(spec: SandboxSpec): Promise<SandboxCom
     return { cmd: w.cmd, args: w.args, env: { ...env, ...w.env }, cwd: os.tmpdir(), isolation: 'bwrap', cleanup() {} };
   }
 
-  // Fallback: plain child process. Still forced through the proxy, but not contained.
+  // Seatbelt or the plain fallback: a child process forced through the credentialed TCP proxy.
+  // Under Seatbelt it can reach only that proxy port, read nothing in your home folder except
+  // what the run needs, and write only to its temp folder and cache.
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sr-actor-'));
   fs.mkdirSync(path.join(tmp, 'home'));
   const binDir = path.join(tmp, 'bin');
@@ -213,6 +218,93 @@ export async function buildSandboxCommand(spec: SandboxSpec): Promise<SandboxCom
     SR_NODE_LIB: pathToFileURL(path.join(SR_DIR, 'node', 'sr.ts')).href,
   };
   for (const k of ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'http_proxy', 'https_proxy', 'all_proxy']) env[k] = spec.proxyUrl;
+  const cleanup = () => fs.rmSync(tmp, { recursive: true, force: true });
+  if (seatbelt) {
+    const params = seatbeltParams({ tmp, actorDir: spec.actorDir, cacheDir: spec.cacheDir, uv, proxyUrl: spec.proxyUrl });
+    const sbArgs = [...Object.entries(params).flatMap(([k, v]) => ['-D', `${k}=${v}`]), '-p', SEATBELT_PROFILE, cmd, ...args];
+    return { cmd: SANDBOX_EXEC, args: sbArgs, env, cwd: tmp, isolation: 'seatbelt', cleanup };
+  }
   const w = limits(cmd, args, systemdRun);
-  return { cmd: w.cmd, args: w.args, env: { ...env, ...w.env }, cwd: tmp, isolation: 'none', cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }) };
+  return { cmd: w.cmd, args: w.args, env: { ...env, ...w.env }, cwd: tmp, isolation: 'none', cleanup };
 }
+
+/** Seatbelt is used on macOS unless the owner chose SR_ACTOR_ISOLATION=none. */
+export function seatbeltAvailable(platform: NodeJS.Platform = process.platform, env: NodeJS.ProcessEnv = process.env): boolean {
+  if (platform !== 'darwin' || env.SR_ACTOR_ISOLATION === 'none') return false;
+  try {
+    fs.accessSync(SANDBOX_EXEC, fs.constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const real = (p: string) => {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return p;
+  }
+};
+
+/**
+ * Paths and the proxy port the profile is parameterised with. Seatbelt matches resolved paths,
+ * so every path is a realpath (/tmp and /var live under /private on macOS).
+ */
+export function seatbeltParams(o: { tmp: string; actorDir: string; cacheDir: string; uv: string | null; proxyUrl: string; home?: string }): Record<string, string> {
+  const home = real(o.home ?? os.homedir());
+  // The Node install the server runs on (e.g. ~/.nvm/versions/node/v25 or the app bundle's node).
+  const nodeRoot = path.dirname(path.dirname(real(process.execPath)));
+  const uvRoot = o.uv ? path.dirname(real(o.uv)) : nodeRoot;
+  return {
+    HOME_DIR: home,
+    TMP_DIR: real(o.tmp),
+    ACTOR_DIR: real(o.actorDir),
+    CACHE_DIR: real(o.cacheDir),
+    SR_LIB: real(SR_DIR),
+    NODE_ROOT: nodeRoot,
+    UV_ROOT: uvRoot,
+    // uv's managed Pythons (`uv python install`), if any.
+    UV_PYTHONS: path.join(home, '.local', 'share', 'uv', 'python'),
+    PROXY: `localhost:${new URL(o.proxyUrl).port}`,
+  };
+}
+
+// Default deny. Reads are open except your home folder, where only names and sizes can be seen
+// (Node resolves paths with lstat) and contents only for the run's own paths, the runtimes and
+// uv's Pythons; writes go only to the temp folder and cache, and the network is
+// the egress proxy's port on localhost and nothing else, so DNS and direct connections fail.
+const SEATBELT_PROFILE = `(version 1)
+(deny default)
+(allow process-fork)
+(allow process-exec)
+(allow signal (target same-sandbox))
+(allow sysctl-read)
+(allow mach-lookup
+  (global-name "com.apple.system.opendirectoryd.libinfo")
+  (global-name "com.apple.system.notification_center")
+  (global-name "com.apple.system.logger")
+  (global-name "com.apple.logd")
+  (global-name "com.apple.trustd")
+  (global-name "com.apple.trustd.agent")
+  (global-name "com.apple.SystemConfiguration.configd"))
+(allow ipc-posix-shm-read-data ipc-posix-shm-read-metadata)
+(allow file-read*)
+(deny file-read-data file-read-xattr (subpath (param "HOME_DIR")) (subpath "/Volumes"))
+(allow file-read-data file-read-xattr
+  (subpath (param "TMP_DIR"))
+  (subpath (param "ACTOR_DIR"))
+  (subpath (param "CACHE_DIR"))
+  (subpath (param "SR_LIB"))
+  (subpath (param "NODE_ROOT"))
+  (subpath (param "UV_ROOT"))
+  (subpath (param "UV_PYTHONS")))
+(allow file-write*
+  (subpath (param "TMP_DIR"))
+  (subpath (param "CACHE_DIR"))
+  (literal "/dev/null")
+  (literal "/dev/zero")
+  (literal "/dev/dtracehelper"))
+(allow file-ioctl (literal "/dev/dtracehelper"))
+(allow network-outbound (remote ip (param "PROXY")))
+`;

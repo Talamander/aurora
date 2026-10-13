@@ -24,10 +24,10 @@ const SHOT = process.env.AURORA_SHOT || ''; // screenshot mode: hidden window, c
 const IS_MAC = process.platform === 'darwin';
 const IS_WIN = process.platform === 'win32';
 // Apps opened from Finder get a bare PATH (/usr/bin:/bin:...). Append Homebrew's folders so the
-// server can find yt-dlp, uv and a system node the way it does from a terminal.
+// server can find yt-dlp, uv (also in ~/.local/bin) and a system node the way it does from a terminal.
 if (IS_MAC) {
   const have = (process.env.PATH || '').split(':');
-  const extra = ['/opt/homebrew/bin', '/usr/local/bin'].filter((d) => !have.includes(d));
+  const extra = ['/opt/homebrew/bin', '/usr/local/bin', path.join(os.homedir(), '.local', 'bin')].filter((d) => !have.includes(d));
   if (extra.length) process.env.PATH = [...have.filter(Boolean), ...extra].join(':');
 }
 const EDITION_ID = 'morning-edition';
