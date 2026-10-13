@@ -31,4 +31,9 @@ run(['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], out);
 for (const pkg of ['react', 'react-dom', 'scheduler', 'loose-envify', 'js-tokens', 'hls.js', '@fontsource-variable']) {
   fs.rmSync(path.join(out, 'node_modules', pkg), { recursive: true, force: true });
 }
+// Drop .bin links left pointing at the packages removed above; macOS signing fails on them.
+const bin = path.join(out, 'node_modules', '.bin');
+for (const name of fs.existsSync(bin) ? fs.readdirSync(bin) : []) {
+  if (!fs.existsSync(path.join(bin, name))) fs.rmSync(path.join(bin, name), { force: true });
+}
 console.log(`Staged the Aurora server in ${out}`);
