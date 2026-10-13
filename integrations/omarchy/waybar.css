@@ -1,0 +1,5 @@
+/* Append to ~/.config/waybar/style.css. Uses Aurora's amber; "off" dims when the server is down. */
+#custom-aurora { padding: 0 8px; color: #ffad7a; }
+#custom-aurora.clear { color: alpha(@foreground, 0.6); }
+#custom-aurora.off { color: alpha(@foreground, 0.3); }
+#custom-aurora.alert { color: #ff7a93; font-weight: bold; }

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1840000000000000001",
+    "created_at": "2024-10-01 18:00:00 +08:00",
+    "full_text": "Worth reading https://example.com/longread https://t.co/media1",
+    "media": [ { "type": "photo", "url": "https://t.co/media1", "thumbnail": "https://pbs.twimg.com/media/photo1?format=jpg&name=thumb", "original": "https://pbs.twimg.com/media/photo1?format=jpg&name=orig", "ext_alt_text": "chart" } ],
+    "screen_name": "writer",
+    "name": "The Writer",
+    "profile_image_url": "https://pbs.twimg.com/profile_images/1/a.jpg",
+    "user_id": "111",
+    "in_reply_to": null,
+    "retweeted_status": null,
+    "quoted_status": "1830000000000000000",
+    "media_tags": [],
+    "favorite_count": 20,
+    "retweet_count": 4,
+    "bookmark_count": 2,
+    "quote_count": 0,
+    "reply_count": 1,
+    "views_count": 1000,
+    "favorited": false,
+    "retweeted": false,
+    "bookmarked": true,
+    "url": "https://x.com/writer/status/1840000000000000001"
+  },
+  {
+    "id": "1840000000000000003",
+    "created_at": "2024-09-28 08:00:00 +00:00",
+    "full_text": "A reply",
+    "media": [],
+    "screen_name": "replier",
+    "name": "Replier",
+    "in_reply_to": "1840000000000000000",
+    "url": "https://x.com/replier/status/1840000000000000003"
+  },
+  { "full_text": "no id here", "screen_name": "x" }
+]

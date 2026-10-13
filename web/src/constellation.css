@@ -1,0 +1,212 @@
+/* Constellation: a full-screen night sky of people, sources and topics. */
+
+.cst {
+  position: fixed;
+  inset: 0;
+  z-index: 59; /* toasts (60) stay above, so Undo after a filter is reachable */
+  background: var(--ground);
+  color: var(--ink);
+  overflow: hidden;
+  animation: cst-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  outline: none;
+}
+@keyframes cst-in { from { opacity: 0; transform: scale(1.015); } }
+
+.cst-sky { position: absolute; inset: 0; cursor: grab; touch-action: none; outline: none; }
+.cst-sky canvas { display: block; }
+.cst-sky:focus-visible:not(.has-focus)::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lamp) 70%, transparent);
+  pointer-events: none;
+}
+
+/* Header: title on the left, legend and buttons on the right, floating on glass. */
+.cst-head {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 18px);
+  left: 22px;
+  right: 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+}
+.cst-head > * { pointer-events: auto; }
+.cst-title { max-width: 520px; }
+.cst-kicker {
+  margin: 0 0 4px;
+  font: 600 11px/1 var(--ui);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: var(--lit);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.cst-title h2 { margin: 0; font: 650 30px/1.05 var(--serif); letter-spacing: -0.025em; }
+.cst-sub { margin: 6px 0 0; font: 400 13px/1.4 var(--ui); color: var(--ink-2); }
+
+.cst-tools { display: flex; align-items: center; gap: 6px; }
+.cst-legend {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  margin-right: 4px;
+}
+.cst-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  font: 500 12.5px/1 var(--ui);
+  color: var(--ink-3);
+  transition: background 0.2s, color 0.2s;
+}
+.cst-chip:hover { color: var(--ink); }
+.cst-chip.on { color: var(--ink); background: color-mix(in srgb, var(--ink) 9%, transparent); }
+.cst-glyph { width: 9px; height: 9px; border-radius: 50%; background: currentColor; opacity: 0.45; flex: none; }
+.cst-chip.on .cst-glyph { opacity: 1; }
+.cst-chip-person.on .cst-glyph { background: radial-gradient(circle, #fff 0 25%, var(--hue-bluesky) 60%); box-shadow: 0 0 8px var(--hue-bluesky); }
+.cst-chip-source.on .cst-glyph { width: 10px; height: 10px; background: radial-gradient(circle at 35% 30%, #fff, var(--hue-rss) 55%); box-shadow: 0 0 0 2px color-mix(in srgb, var(--hue-rss) 30%, transparent); }
+.cst-chip-topic .cst-glyph { border-radius: 1px; transform: rotate(45deg) scale(0.8); }
+.cst-chip-topic.on .cst-glyph { background: #c3a6ff; box-shadow: 0 0 8px #c3a6ff; }
+:root:not([data-theme='dark']) .cst-chip-topic.on .cst-glyph { background: #7148d6; box-shadow: none; }
+
+.cst-btn {
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+/* The card beside the active star. Positioned by the draw loop with a transform. */
+.cst-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  padding: 14px 16px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--float-shadow);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  pointer-events: none;
+  animation: cst-card-in 0.18s ease-out both;
+  will-change: transform;
+}
+.cst-card::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--c, var(--lit));
+  opacity: 0.9;
+}
+.cst-card-topic::before { background: var(--lit); }
+@keyframes cst-card-in { from { opacity: 0; } }
+.cst-card-kind { margin: 0 0 6px; font: 600 10.5px/1 var(--ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.cst-card h3 { margin: 0; font: 650 18px/1.2 var(--serif); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.cst-card-sub { margin: 2px 0 0; font: 400 12.5px/1.3 var(--mono); color: var(--ink-3); overflow-wrap: anywhere; }
+.cst-card-stats { margin: 10px 0 0; display: flex; flex-direction: column; gap: 2px; font: 400 12.5px/1.35 var(--ui); color: var(--ink-2); }
+.cst-card-stats strong { font-weight: 600; color: var(--ink); }
+.cst-card-last {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font: 400 13px/1.45 var(--ui);
+  color: var(--ink-2);
+}
+.cst-card-quote { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.cst-card-when { display: block; margin-top: 4px; font-size: 11.5px; color: var(--ink-3); }
+.cst-open { display: none; margin-top: 12px; width: 100%; justify-content: center; gap: 8px; }
+.cst-open kbd { background: color-mix(in srgb, var(--on-lamp) 18%, transparent); color: inherit; border-color: transparent; }
+
+/* A tapped star docks its card at the bottom, with a real button. */
+.cst-card.docked {
+  pointer-events: auto;
+  top: auto;
+  left: 12px;
+  right: 12px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  width: auto;
+  max-width: 460px;
+  margin: 0 auto;
+  transform: none !important;
+  animation: cst-dock-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cst-card.docked .cst-open { display: inline-flex; }
+@keyframes cst-dock-in { from { opacity: 0; transform: translateY(16px); } }
+
+.cst-hint {
+  position: absolute;
+  left: 22px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  margin: 0;
+  display: flex;
+  gap: 16px;
+  font: 400 12px/1 var(--ui);
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.cst-hint span { display: inline-flex; align-items: center; gap: 4px; }
+.cst-hint kbd { font-size: 10.5px; }
+.cst-total {
+  position: absolute;
+  right: 22px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  margin: 0;
+  font: 400 12px/1 var(--ui);
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+.cst-empty {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100% - 40px));
+  text-align: center;
+  padding: 28px 24px 24px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.cst-empty h3 { margin: 0 0 8px; font: 650 20px/1.2 var(--serif); }
+.cst-empty p { margin: 0 0 18px; color: var(--ink-2); line-height: 1.5; }
+
+@media (max-width: 640px) {
+  .cst-head { left: 16px; right: 16px; flex-direction: column; gap: 12px; }
+  .cst-title h2 { font-size: 24px; }
+  .cst-sub { font-size: 12.5px; }
+  .cst-tools { width: 100%; }
+  .cst-legend { flex: 1; overflow-x: auto; scrollbar-width: none; }
+  .cst-chip { min-height: 36px; padding: 0 10px 0 9px; }
+  .cst-tools .cst-btn:last-child { position: absolute; top: 0; right: 0; }
+  .cst-hint, .cst-total, .cst-where { display: none; }
+  .cst-card:not(.docked) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cst, .cst-card, .cst-card.docked { animation: none; }
+}

@@ -1,0 +1,79 @@
+# Aurora, self-hosted.
+#
+#   cp .env.example .env    # optional: edit settings
+#   docker compose up -d     # then open http://127.0.0.1:4317
+#
+# Works with `podman compose` too. Full guide: docs/self-hosting.md
+
+services:
+  social-reader:
+    build: .
+    image: localhost/social-reader:latest
+    container_name: social-reader
+    restart: unless-stopped
+    ports:
+      # Published on the host's loopback only. Do not change this to 0.0.0.0 unless an
+      # authenticating reverse proxy or a private network (Tailscale) sits in front of it.
+      - "127.0.0.1:${SR_PORT:-4317}:4317"
+    volumes:
+      - social-reader-data:/data
+      # Or keep the data in a folder next to this file (it must be writable by uid 1000):
+      # - ./data:/data
+    environment:
+      # Host names the server answers to (DNS-rebinding guard). Add your private hostname
+      # here if you put the app behind Tailscale Serve or an authenticating reverse proxy.
+      SR_ALLOWED_HOSTS: "127.0.0.1:${SR_PORT:-4317},localhost:${SR_PORT:-4317},${SR_EXTRA_HOSTS:-}"
+      AUTO_SYNC_MINUTES: "${AUTO_SYNC_MINUTES:-30}"
+      # AI provider (optional; you can also set it in the app under AI settings, where keys are
+      # stored on the server and never sent to the browser).
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      # For an OpenAI-compatible endpoint (Ollama, LM Studio, OpenRouter, OpenAI), choose
+      # "OpenAI-compatible" in AI settings and set the base URL there, for example
+      # http://host.docker.internal:11434/v1 for Ollama on this machine, or
+      # http://ollama:11434/v1 for the optional service below. Key only if the endpoint needs one.
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      # Actor sandbox: "auto" uses bubblewrap when the container allows it (see security_opt
+      # below) and otherwise falls back to a plain subprocess labelled "isolation: none".
+      # Set to "none" to skip bubblewrap entirely.
+      SR_ACTOR_ISOLATION: "${SR_ACTOR_ISOLATION:-auto}"
+    extra_hosts:
+      # Lets the app reach services on the host, such as Ollama, at host.docker.internal.
+      - "host.docker.internal:host-gateway"
+    # Container hardening: no root, no capabilities, no privilege escalation.
+    user: "1000:1000"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+      # The actor sandbox (bubblewrap) needs to create user namespaces and mount a fresh /proc,
+      # which Docker's default seccomp profile and masked /proc paths forbid. These two lines
+      # allow it. The app still runs as uid 1000 with no capabilities, and in exchange the
+      # AI-written actors get the real sandbox: no network except the egress-proxy allowlist,
+      # and no access to /data (your library, AI keys, browser sessions). Without them, actors
+      # run as plain processes that could read /data and open sockets directly; the proxy
+      # allowlist then only covers well-behaved HTTP clients. On hosts with AppArmor (Ubuntu),
+      # also add "apparmor=unconfined".
+      # Podman ignores "systempaths=unconfined"; replace that line with "unmask=ALL".
+      # To keep the container defaults instead, delete these lines AND set
+      # SR_ACTOR_ISOLATION=none (otherwise connector runs can fail rather than fall back).
+      - seccomp=unconfined
+      - systempaths=unconfined
+    shm_size: "512m"      # Chromium needs more than Docker's 64 MB /dev/shm
+    mem_limit: "4g"
+    pids_limit: 2048
+    init: false           # the image already runs tini as PID 1
+
+  # Optional: a local model with Ollama. Uncomment, then `docker compose up -d` and
+  # `docker compose exec ollama ollama pull qwen3:14b` (or any tool-calling model).
+  # In Aurora's AI settings choose OpenAI-compatible, base URL http://ollama:11434/v1.
+  # ollama:
+  #   image: docker.io/ollama/ollama:latest
+  #   container_name: social-reader-ollama
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ollama-models:/root/.ollama
+  #   # No ports published: only Aurora talks to it. For a GPU, see Ollama's docs
+  #   # (deploy.resources.reservations.devices with the nvidia driver).
+
+volumes:
+  social-reader-data:
+  # ollama-models:

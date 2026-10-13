@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora
+Comment=Your private, agentic social feed
+# Omarchy's web-app launcher opens a clean app window. Swap in `xdg-open` elsewhere.
+Exec=sh -c 'command -v omarchy-launch-webapp >/dev/null && exec omarchy-launch-webapp http://127.0.0.1:4317 || exec xdg-open http://127.0.0.1:4317'
+Icon=aurora
+Categories=Network;News;
+StartupWMClass=Aurora

@@ -1,0 +1,5 @@
+/* The side-pane "Your week is ready" card on Sunday evening and Monday (WeekEntry.tsx). */
+.wk-ready { position: relative; overflow: hidden; isolation: isolate; }
+.wk-ready-sky { position: absolute; inset: -40% -20% auto; height: 120%; z-index: -1; background: radial-gradient(40% 50% at 25% 50%, #ffc56b, transparent), radial-gradient(40% 50% at 55% 40%, #ff7a9c, transparent), radial-gradient(40% 50% at 85% 55%, #a69bff, transparent); filter: blur(28px); opacity: 0.32; }
+.wk-ready-title { margin: 4px 0 4px; font: 680 19px/1.2 var(--ui); letter-spacing: -0.02em; }
+.wk-ready-sub { margin: 0 0 12px; font: 400 13px/1.45 var(--ui); color: var(--ink-2); }

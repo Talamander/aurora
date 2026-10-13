@@ -1,0 +1,62 @@
+/* Time well spent (web/src/TimeWell.tsx): the Today ring, the end-of-feed card, the week strip and
+   the sheet. Colour comes from the profile (--pc), so each profile's time reads as its own. */
+
+.tw-ring { display: inline-flex; align-items: center; gap: 4px; flex: none; align-self: center; min-height: 28px; padding: 2px 8px 2px 3px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink-2); font: 600 11.5px/1 var(--mono); font-variant-numeric: tabular-nums; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+.tw-ring:hover, .tw-ring:focus-visible { border-color: color-mix(in srgb, var(--pc) 60%, var(--line)); color: var(--ink); }
+.tw-ring svg { display: block; }
+.tw-ring-bg { fill: none; stroke: color-mix(in srgb, var(--ink-3) 30%, transparent); stroke-width: 3; }
+.tw-ring-fg { fill: none; stroke: var(--pc); stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
+.tw-ring.over .tw-ring-n { color: var(--ink); }
+
+/* ---------- the card where the feed ends */
+.tw-up { position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin: 8px 0 24px; padding: 34px 22px 26px; border-radius: 22px; border: 1px solid color-mix(in srgb, var(--pc) 35%, var(--line)); background: var(--surface); }
+.tw-up-glow { position: absolute; inset: -40% -10% auto; height: 120%; z-index: -1; background: radial-gradient(closest-side, color-mix(in srgb, var(--pc) 30%, transparent), transparent 70%); filter: blur(30px); opacity: 0.9; animation: tw-breathe 9s ease-in-out infinite; }
+@keyframes tw-breathe { 50% { transform: translateY(8%) scale(1.06); opacity: 0.6; } }
+.tw-up h3 { margin: 6px 0 0; max-width: 26ch; font: 680 24px/1.15 var(--ui); letter-spacing: -0.035em; color: var(--ink); text-wrap: balance; }
+.tw-up p { margin: 0; max-width: 40ch; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.tw-up-switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
+.tw-up-to { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding-left: 8px; }
+.tw-up-to:hover { border-color: var(--pc); }
+.tw-up-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.tw-up-actions .btn { min-height: 36px; }
+
+/* ---------- week strip */
+.tw-strip { margin: 4px 0 10px; }
+.tw-bars { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; height: 92px; padding-bottom: 18px; }
+.tw-bar { position: relative; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.tw-bar i { display: block; width: 100%; min-height: 0; border-radius: 6px 6px 3px 3px; background: color-mix(in srgb, var(--pc) 45%, var(--raised)); transition: height 0.5s ease; }
+.tw-bar.today i { background: var(--pc); }
+.tw-bar b { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font: 500 11px/1 var(--mono); color: var(--ink-3); }
+.tw-bar.today b { color: var(--ink); font-weight: 650; }
+.tw-limit { position: absolute; left: -4px; right: -4px; height: 0; border-top: 1px dashed color-mix(in srgb, var(--ink-2) 70%, transparent); margin-bottom: 18px; }
+.tw-strip figcaption { margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
+
+/* ---------- sheet */
+.tw-sheet { max-width: 520px; }
+.tw-sheet .sheet-head > div { flex: 1; }
+.tw-kicker { margin: 0 0 4px; font: 650 11.5px/1 var(--ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.tw-sheet .sheet-head h2 { font-size: 28px; letter-spacing: -0.04em; }
+.tw-sheet .f-hint.lead { margin: 0 0 18px; }
+.tw-rows { list-style: none; margin: 4px 0 18px; padding: 0; display: grid; gap: 14px; }
+.tw-row { display: flex; gap: 12px; align-items: flex-start; }
+.tw-row-main { flex: 1; min-width: 0; display: grid; gap: 5px; }
+.tw-row-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tw-row-name { font: 600 14px/1.2 var(--ui); color: var(--ink); }
+.tw-row-today { font: 500 12.5px/1.2 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.tw-row-track { height: 6px; border-radius: 999px; background: var(--raised); overflow: hidden; }
+.tw-row-track i { display: block; height: 100%; border-radius: inherit; background: var(--pc); }
+.tw-row-week { font-size: 12px; color: var(--ink-2); }
+
+/* ---------- profile sheet */
+.prof-limit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.prof-limit input { width: 88px; }
+.prof-limit span { font-size: 13px; color: var(--ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-up-glow { animation: none; }
+  .tw-ring-fg, .tw-bar i { transition: none; }
+}
+@media (max-width: 520px) {
+  .tw-up { padding: 28px 16px 22px; border-radius: 20px; }
+  .tw-up h3 { font-size: 21px; }
+}

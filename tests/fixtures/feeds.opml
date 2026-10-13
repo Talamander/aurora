@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head><title>Fixture feeds</title></head>
+  <body>
+    <outline text="Tech">
+      <outline type="rss" text="Example &amp; Co" title="Example &amp; Co" xmlUrl="https://feeds.example.com/a.xml" htmlUrl="https://example.com/"/>
+      <outline type="rss" text="Second" xmlUrl='https://feeds.example.org/b.rss'/>
+      <outline type="rss" text="Bad" xmlUrl="javascript:alert(1)"/>
+    </outline>
+  </body>
+</opml>

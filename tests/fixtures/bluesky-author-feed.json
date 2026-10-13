@@ -1,0 +1,51 @@
+{
+  "feed": [
+    {
+      "post": {
+        "uri": "at://did:plc:alice123/app.bsky.feed.post/3kaaa111",
+        "cid": "bafy1",
+        "author": { "did": "did:plc:alice123", "handle": "alice.bsky.social", "displayName": "Alice", "avatar": "https://cdn.bsky.app/img/avatar/alice.jpg" },
+        "record": {
+          "$type": "app.bsky.feed.post",
+          "text": "Great article on feeds example.com/art…",
+          "createdAt": "2024-10-01T12:00:00.000Z",
+          "langs": ["en-US"],
+          "facets": [{ "index": { "byteStart": 23, "byteEnd": 40 }, "features": [{ "$type": "app.bsky.richtext.facet#link", "uri": "https://example.com/article-on-feeds" }] }]
+        },
+        "embed": {
+          "$type": "app.bsky.embed.external#view",
+          "external": { "uri": "https://example.com/article-on-feeds", "title": "Article on feeds", "description": "desc", "thumb": "https://cdn.bsky.app/img/thumb/x.jpg" }
+        },
+        "replyCount": 2, "repostCount": 3, "likeCount": 10, "quoteCount": 0,
+        "indexedAt": "2024-10-01T12:00:01.000Z"
+      }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:bob456/app.bsky.feed.post/3kbbb222",
+        "author": { "did": "did:plc:bob456", "handle": "bob.example.com", "displayName": "" },
+        "record": { "text": "Photos from the trip", "createdAt": "2024-09-30T08:00:00.000Z", "langs": ["de"] },
+        "embed": {
+          "$type": "app.bsky.embed.images#view",
+          "images": [{ "thumb": "https://cdn.bsky.app/img/feed_thumbnail/1.jpg", "fullsize": "https://cdn.bsky.app/img/feed_fullsize/1.jpg", "alt": "A mountain" }]
+        },
+        "likeCount": 5
+      },
+      "reason": { "$type": "app.bsky.feed.defs#reasonRepost", "by": { "did": "did:plc:alice123", "handle": "alice.bsky.social" }, "indexedAt": "2024-10-01T13:00:00.000Z" }
+    },
+    {
+      "post": {
+        "uri": "at://did:plc:alice123/app.bsky.feed.post/3kccc333",
+        "author": { "did": "did:plc:alice123", "handle": "alice.bsky.social", "displayName": "Alice" },
+        "record": { "text": "Replying with a quote", "createdAt": "2024-10-02T09:00:00.000Z", "reply": { "root": { "uri": "at://x" }, "parent": { "uri": "at://x" } } },
+        "embed": {
+          "$type": "app.bsky.embed.recordWithMedia#view",
+          "media": { "$type": "app.bsky.embed.video#view", "cid": "c", "playlist": "https://video.bsky.app/watch/abc/playlist.m3u8", "thumbnail": "https://video.bsky.app/watch/abc/thumbnail.jpg", "alt": "clip" },
+          "record": { "record": { "$type": "app.bsky.embed.record#viewRecord", "uri": "at://did:plc:carol/app.bsky.feed.post/3kddd444", "author": { "did": "did:plc:carol", "handle": "carol.bsky.social", "displayName": "Carol" }, "value": { "$type": "app.bsky.feed.post", "text": "Original quoted words" } } }
+        }
+      }
+    },
+    { "post": { "uri": "not-an-at-uri" } }
+  ],
+  "cursor": "2024-09-30T08:00:00.000Z"
+}

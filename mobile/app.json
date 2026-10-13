@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "Aurora",
+    "slug": "aurora",
+    "version": "0.1.0",
+    "scheme": "aurora",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#05060a",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#05060a"
+    },
+    "ios": {
+      "bundleIdentifier": "dev.aurora.reader",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true },
+        "NSLocalNetworkUsageDescription": "Aurora connects to the Aurora server on your own computer over your network."
+      }
+    },
+    "android": {
+      "package": "dev.aurora.reader",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-foreground.png",
+        "monochromeImage": "./assets/adaptive-monochrome.png",
+        "backgroundColor": "#0b0a16"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": ["android.permission.CAMERA", "android.permission.INTERNET"],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
+      "intentFilters": [
+        {
+          "action": "SEND",
+          "category": ["DEFAULT"],
+          "data": [{ "mimeType": "text/plain" }]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      "expo-video",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Aurora uses the camera only to scan the pairing code shown on your computer.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": { "usesCleartextTraffic": true }
+        }
+      ],
+      "./plugins/withShareTarget.js"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

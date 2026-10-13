@@ -1,0 +1,74 @@
+/* ---------- longform outside the reader: feed affordances, read-later queue, highlights */
+
+.read-row { display: flex; align-items: center; gap: 16px; margin-top: 8px; }
+.read-row .read-more { margin: 0; }
+.read-open { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 13px 0 11px !important; border-radius: 99px; background: var(--lamp-wash); }
+.read-open:hover { background: var(--lamp-soft); text-decoration: none !important; }
+.read-more.subtle { color: var(--ink-3); font-weight: 550; }
+.link-read { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 6px; padding: 6px 12px 6px 10px; border-radius: 99px; background: var(--lamp-wash); color: var(--lamp-ink); font: 600 12.5px/1 var(--ui); }
+.link-read:hover { background: var(--lamp-soft); }
+
+/* highlight citation chips in AI text */
+.hl-cite { --hl: var(--lamp); display: inline-flex; align-items: baseline; gap: 5px; max-width: 100%; margin: 0 2px; padding: 1px 8px 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--hl) 16%, transparent); border-left: 2px solid var(--hl); color: var(--ink); font-style: italic; font-size: 0.94em; text-align: left; vertical-align: baseline; }
+.hl-cite:hover { background: color-mix(in srgb, var(--hl) 26%, transparent); }
+.hl-cite svg { flex: none; color: var(--hl); transform: translateY(1px); }
+.hl-cite.loading { opacity: 0.5; }
+.hl-bar-lamp { --hl: var(--lamp); }
+.hl-bar-green { --hl: #2fb170; }
+.hl-bar-blue { --hl: #3f86ff; }
+.hl-bar-pink { --hl: #f0569a; }
+
+/* sheets */
+.sheet.lf-sheet { width: min(560px, 100%); }
+.lf-add { display: grid; gap: 18px; margin: 12px 0 18px; padding: 16px; border-radius: var(--r-m); background: var(--raised); }
+.lf-label { display: block; font: 600 13px/1.2 var(--ui); margin-bottom: 8px; }
+.lf-row { display: flex; gap: 8px; }
+.lf-row input { flex: 1; min-width: 0; height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 14px var(--ui); outline: none; }
+.lf-row input:focus { border-color: var(--lamp); box-shadow: 0 0 0 3px var(--lamp-soft); }
+.lf-hint { margin: 8px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-3); }
+.lf-import .btn { margin-top: 2px; }
+
+.lf-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 0 10px; font: 14px/1.3 var(--ui); color: var(--ink-2); }
+.lf-summary strong { font: 650 22px/1 var(--ui); letter-spacing: -0.03em; color: var(--ink); margin-right: 2px; }
+.lf-total { color: var(--ink-3); }
+.lf-controls { display: grid; gap: 10px; margin-bottom: 14px; }
+.lf-controls .seg { justify-self: stretch; display: flex; }
+.lf-controls .seg button { flex: 1; }
+.lf-fits { display: flex; flex-wrap: wrap; gap: 6px; }
+.lf-fits .chip { cursor: pointer; }
+
+.lf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.lf-item { display: flex; align-items: center; gap: 4px; border-radius: 12px; }
+.lf-item:hover { background: var(--raised); }
+.lf-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; padding: 12px 6px 12px 10px; text-align: left; }
+.lf-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.lf-host { font: 500 10.5px/1 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); }
+.lf-title { font: 600 15px/1.3 var(--ui); letter-spacing: -0.015em; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lf-item.read .lf-title { color: var(--ink-2); font-weight: 550; }
+.lf-meta { font: 12.5px/1.3 var(--ui); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.lf-prog { display: block; height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 3px; max-width: 220px; }
+.lf-prog i { display: block; height: 100%; background: var(--lit); }
+.lf-thumb { width: 64px; height: 64px; flex: none; object-fit: cover; border-radius: 10px; background: var(--raised); }
+.lf-toggle { margin-right: 6px; }
+.lf-toggle.on { color: var(--lamp-ink); }
+.lf-sub { margin: 26px 0 8px; font: 500 11px/1 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); }
+.lf-list.sugg .lf-title { font-weight: 550; }
+.lf-empty, .lf-error { color: var(--ink-3); font-size: 14px; }
+.lf-error { color: var(--warn); }
+.lf-emptybox { display: grid; justify-items: center; gap: 4px; text-align: center; padding: 34px 20px; color: var(--ink-3); font-size: 14px; line-height: 1.5; }
+.lf-emptybox p { margin: 0; max-width: 36ch; }
+.lf-empty-title { color: var(--ink) !important; font-weight: 600; font-size: 15px; margin-top: 6px !important; }
+
+.lf-search { margin: 12px 0 10px; }
+.lf-ask { margin-bottom: 8px; }
+.lf-hgroup { margin: 18px 0 8px; }
+.lf-htitle { display: block; text-align: left; margin: 0 0 8px; font: 650 14.5px/1.3 var(--ui); letter-spacing: -0.015em; color: var(--ink); }
+.lf-htitle:hover { color: var(--lamp-ink); }
+.lf-h { position: relative; padding: 4px 0 6px 14px; margin: 0 0 10px; border-left: 3px solid var(--hl); }
+.lf-hq { display: block; text-align: left; font: 15.5px/1.55 'Literata Variable', 'Iowan Old Style', Charter, Georgia, serif; color: var(--ink); }
+.lf-hq:hover { color: var(--lamp-ink); }
+.lf-hn { margin: 6px 0 0; font: 13.5px/1.45 var(--ui); color: var(--ink-2); }
+.lf-hmeta { display: flex; gap: 14px; margin-top: 6px; font: 12px/1 var(--ui); color: var(--ink-3); }
+.lf-hmeta .link-btn { font-size: 12px; color: var(--ink-3); }
+.lf-q { background: var(--lamp-soft); border-radius: 3px; font-weight: inherit; }
+.lf-search input:focus, .lf-search input:focus-visible { outline: none; box-shadow: none; }

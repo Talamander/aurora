@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Social Reader: three futures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Archivo:wdth,wght@62..125,400..900&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+<meta name="referrer" content="no-referrer">
+<style>
+/* Exploration sheet only. Real posts from the scratch library (public Bluesky posts and
+   Simon Willison's feed), shown as they would appear to Tal. Nothing here is wired to the app. */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: #d9dbe0; font: 15px/1.5 Geist, system-ui, sans-serif; color: #111; padding: 40px 24px 80px; }
+.sheet-head { max-width: 1280px; margin: 0 auto 28px; }
+.sheet-head h1 { font: 650 28px/1.1 Geist, sans-serif; letter-spacing: -0.03em; margin: 0 0 6px; }
+.sheet-head p { margin: 0; color: #4a5160; max-width: 70ch; }
+.label { max-width: 1280px; margin: 44px auto 12px; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.label b { font: 700 13px/1 "Geist Mono", monospace; letter-spacing: .04em; text-transform: uppercase; }
+.label span { font: 600 20px/1.2 Geist, sans-serif; letter-spacing: -0.02em; }
+.label em { font-style: normal; color: #4a5160; flex-basis: 100%; max-width: 90ch; }
+.frame { position: relative; width: 1280px; height: 800px; margin: 0 auto; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,.08), 0 30px 60px -20px rgba(0,0,0,.35); isolation: isolate; }
+.scroll { overflow-y: auto; scrollbar-width: none; }
+.scroll::-webkit-scrollbar { display: none; }
+img { display: block; max-width: 100%; }
+svg.i { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+
+/* ============ A. AURORA: the feed lit by its own pictures ============ */
+.A { background: #05060a; color: #eef0f6; display: grid; grid-template-columns: 76px 1fr 300px; font-family: Geist, sans-serif; }
+.a-rail { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 0; border-right: 1px solid rgba(255,255,255,.06); z-index: 2; }
+.a-mark { width: 30px; height: 30px; border-radius: 9px; background: conic-gradient(from 200deg, #ffb35c, #ff5f8f, #7f8cff, #4fe0c6, #ffb35c); box-shadow: 0 6px 18px -4px rgba(255,120,140,.6); margin-bottom: 18px; }
+.a-rail button { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; color: rgba(238,240,246,.55); }
+.a-rail button.on { background: rgba(255,255,255,.08); color: #fff; }
+.a-main { position: relative; height: 800px; }
+.a-feed { height: 100%; padding: 36px 0 140px; }
+.a-col { width: 600px; margin: 0 auto; }
+.a-head { margin: 4px 8px 26px; }
+.a-kick { font: 500 12px/1 "Geist Mono", monospace; color: rgba(238,240,246,.55); letter-spacing: .06em; text-transform: uppercase; }
+.a-head h1 { font: 680 56px/1 Geist, sans-serif; letter-spacing: -0.055em; margin: 12px 0 10px; }
+.a-head h1 .n { background: linear-gradient(100deg, #ffc56b, #ff7a9c 60%, #a69bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.a-head p { margin: 0; color: rgba(238,240,246,.7); font-size: 15px; }
+.a-head p u { text-decoration-color: rgba(255,255,255,.35); text-underline-offset: 3px; }
+.a-post { position: relative; margin: 0 0 22px; transition: opacity .5s, transform .5s, filter .5s; }
+.a-post.gone { opacity: 0; transform: scale(.97); filter: blur(6px); height: 0; margin: 0; overflow: hidden; }
+.a-aura { position: absolute; inset: 10px -40px -10px; z-index: -1; background-size: cover; background-position: center; filter: blur(64px) saturate(1.9); opacity: .5; border-radius: 40px; animation: breathe 9s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .32; transform: scale(1.04); } }
+.a-card { position: relative; border-radius: 26px; padding: 18px 18px 12px; background: rgba(14,16,22,.66); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4); border: 1px solid rgba(255,255,255,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.07); }
+.a-who { display: flex; align-items: center; gap: 12px; }
+.a-av { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px rgba(255,255,255,.12); }
+.a-av.txt { display: grid; place-items: center; font: 650 14px/1 Geist; background: linear-gradient(150deg, #ffb35c, #ff6f3c); color: #1a0c04; }
+.a-name { font-weight: 620; letter-spacing: -0.01em; }
+.a-meta { font: 400 12.5px/1.2 "Geist Mono", monospace; color: rgba(238,240,246,.5); }
+.a-new { width: 7px; height: 7px; border-radius: 50%; background: #ffc56b; box-shadow: 0 0 10px #ffc56b; display: inline-block; margin-left: 6px; vertical-align: 1px; }
+.a-text { font-size: 17px; line-height: 1.55; margin: 12px 0 0; letter-spacing: -0.005em; }
+.a-title { font: 650 22px/1.2 Geist; letter-spacing: -0.03em; margin: 14px 0 6px; }
+.a-ex { color: rgba(238,240,246,.68); margin: 0; }
+.a-media { margin-top: 14px; border-radius: 18px; overflow: hidden; display: grid; gap: 3px; }
+.a-media.g4 { grid-template-columns: 1fr 1fr; }
+.a-media.g4 img { aspect-ratio: 1.1; object-fit: cover; width: 100%; }
+.a-media.g1 img { width: 100%; max-height: 360px; object-fit: cover; }
+.a-media.hero img { aspect-ratio: 2.3; object-fit: cover; object-position: top; width: 100%; }
+.a-foot { display: flex; align-items: center; gap: 4px; margin-top: 12px; }
+.a-foot button { height: 34px; padding: 0 10px; border-radius: 12px; display: flex; gap: 6px; align-items: center; color: rgba(238,240,246,.6); font-size: 13px; }
+.a-foot button:hover { background: rgba(255,255,255,.07); color: #fff; }
+.a-why { margin-left: auto; font: 450 11.5px/1 "Geist Mono", monospace; color: rgba(238,240,246,.55); padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.06); white-space: nowrap; }
+.a-why i { font-style: normal; color: #9ff0d9; }
+.a-dock { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px; border-radius: 22px; background: rgba(28,30,38,.55); backdrop-filter: blur(30px) saturate(1.6); -webkit-backdrop-filter: blur(30px) saturate(1.6); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 20px 50px -10px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.12); z-index: 5; }
+.a-lens { position: relative; height: 52px; padding: 0 18px; border-radius: 17px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; color: rgba(238,240,246,.65); transition: background .35s, color .35s; min-width: 108px; }
+.a-lens b { font: 600 14px/1.2 Geist; letter-spacing: -0.01em; }
+.a-lens small { font: 450 11.5px/1.2 "Geist Mono", monospace; opacity: .75; }
+.a-lens.on { color: #120a06; background: linear-gradient(160deg, #ffe0a8, #ffb37a 55%, #ff8fa8); box-shadow: 0 8px 22px -6px rgba(255,150,120,.7), inset 0 1px 0 rgba(255,255,255,.6); }
+.a-lens.add { min-width: 0; padding: 0 14px; align-items: center; }
+.a-side { padding: 30px 22px; border-left: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; gap: 26px; z-index: 2; background: linear-gradient(#05060a, #07080d); }
+.a-side h3 { font: 500 11.5px/1 "Geist Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: rgba(238,240,246,.5); margin: 0 0 14px; }
+.a-rule { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 14px; }
+.a-rule small { display: block; font: 400 12px/1.3 "Geist Mono", monospace; color: rgba(238,240,246,.45); margin-top: 2px; }
+.a-sw { width: 40px; height: 24px; border-radius: 99px; background: rgba(255,255,255,.12); position: relative; flex: none; }
+.a-sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #9aa0ad; transition: .25s; }
+.a-sw.on { background: linear-gradient(90deg, #4fe0c6, #7fd6ff); box-shadow: 0 0 16px -2px rgba(79,224,198,.7); }
+.a-sw.on::after { left: 19px; background: #fff; }
+.a-ppl { display: flex; flex-wrap: wrap; gap: 10px; }
+.a-ppl img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.a-ppl .lit { box-shadow: 0 0 0 2px #05060a, 0 0 0 4px #ffc56b, 0 0 16px 2px rgba(255,197,107,.4); }
+.a-note { font-size: 12.5px; color: rgba(238,240,246,.45); line-height: 1.5; margin-top: auto; }
+
+/* ============ B. FORECAST: the weather report for your corner of the internet ============ */
+.B { background: #fbfaf8; color: #17120f; display: grid; grid-template-columns: 76px 1fr 290px; font-family: Geist, sans-serif; }
+.b-rail { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 0; background: #17120f; color: #fbfaf8; }
+.b-mark { width: 30px; height: 30px; border-radius: 50%; background: #ff4f1a; margin-bottom: 18px; box-shadow: inset -4px -4px 0 rgba(0,0,0,.18); }
+.b-rail button { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: rgba(251,250,248,.5); }
+.b-rail button.on { background: rgba(255,255,255,.1); color: #fff; }
+.b-main { height: 800px; }
+.b-band { background: #ff4f1a; color: #1b0a03; padding: 30px 40px 26px; position: relative; overflow: hidden; }
+.b-band::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 60%); pointer-events: none; }
+.b-top { display: flex; justify-content: space-between; font: 600 12px/1 "Geist Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.b-now { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: end; margin-top: 14px; }
+.b-big { font: 850 188px/.8 Archivo, sans-serif; font-variation-settings: "wdth" 62; letter-spacing: -0.04em; }
+.b-sum h2 { font: 800 40px/1 Archivo, sans-serif; font-variation-settings: "wdth" 70; letter-spacing: -0.01em; text-transform: uppercase; margin: 0 0 10px; }
+.b-sum p { margin: 0; font-size: 16px; line-height: 1.45; max-width: 46ch; color: #2b1206; }
+.b-radar { margin-top: 22px; }
+.b-radar svg { width: 100%; height: 92px; display: block; }
+.b-fronts { display: flex; gap: 8px; padding: 16px 40px; border-bottom: 1px solid rgba(23,18,15,.08); flex-wrap: wrap; align-items: center; }
+.b-fronts > span { font: 600 11.5px/1 "Geist Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: #8a7d74; margin-right: 6px; }
+.b-front { height: 34px; padding: 0 14px 0 6px; border-radius: 999px; background: #fff; border: 1px solid rgba(23,18,15,.1); display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 550; }
+.b-front i { font: 800 13px/1 Archivo; font-style: normal; font-variation-settings: "wdth" 70; min-width: 24px; height: 24px; border-radius: 99px; display: grid; place-items: center; background: #17120f; color: #fff; padding: 0 6px; }
+.b-front.off { color: #9b8f86; background: transparent; border-style: dashed; }
+.b-front.off i { background: transparent; color: #9b8f86; border: 1px solid #cfc6bf; }
+.b-feed { height: calc(800px - var(--bandh, 400px)); }
+.b-row { display: grid; grid-template-columns: 96px 1fr; padding: 22px 40px 20px 0; border-bottom: 1px solid rgba(23,18,15,.08); }
+.b-time { text-align: right; padding-right: 22px; font: 800 26px/1 Archivo; font-variation-settings: "wdth" 62; color: #17120f; }
+.b-time small { display: block; font: 500 11px/1.3 "Geist Mono", monospace; color: #9b8f86; margin-top: 4px; letter-spacing: .03em; }
+.b-who { display: flex; align-items: center; gap: 10px; }
+.b-av { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+.b-av.txt { display: grid; place-items: center; font: 800 13px/1 Archivo; background: #17120f; color: #ff4f1a; }
+.b-name { font-weight: 640; }
+.b-handle { color: #8a7d74; font-size: 13.5px; }
+.b-src { margin-left: auto; font: 500 11.5px/1 "Geist Mono", monospace; color: #8a7d74; display: flex; align-items: center; gap: 6px; }
+.b-src::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
+.b-text { font-size: 16.5px; line-height: 1.55; margin: 10px 0 0; }
+.b-title { font: 800 30px/1.02 Archivo; font-variation-settings: "wdth" 72; text-transform: none; letter-spacing: -0.01em; margin: 12px 0 8px; }
+.b-ex { color: #4f4640; margin: 0; }
+.b-media { margin-top: 14px; display: grid; gap: 6px; }
+.b-media.g4 { grid-template-columns: repeat(4, 1fr); }
+.b-media.g4 img { aspect-ratio: .8; object-fit: cover; border-radius: 10px; width: 100%; }
+.b-media.g1 img, .b-media.hero img { border-radius: 12px; width: 100%; max-height: 300px; object-fit: cover; object-position: top; }
+.b-tags { display: flex; gap: 6px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.b-tag { font: 500 12px/1 "Geist Mono", monospace; padding: 6px 8px; border-radius: 6px; background: #f1ece7; color: #5a4d44; }
+.b-tag.why { background: #fff1ea; color: #b8340a; }
+.b-acts { margin-left: auto; display: flex; gap: 2px; color: #8a7d74; }
+.b-acts button { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; }
+.b-acts button:hover { background: #f1ece7; color: #17120f; }
+.b-side { border-left: 1px solid rgba(23,18,15,.08); padding: 30px 24px; display: flex; flex-direction: column; gap: 24px; background: #f5f2ee; }
+.b-side h3 { font: 800 15px/1 Archivo; font-variation-settings: "wdth" 70; text-transform: uppercase; letter-spacing: .02em; margin: 0 0 6px; }
+.b-cond { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(23,18,15,.08); }
+.b-cond b { font-weight: 600; font-size: 14.5px; }
+.b-cond small { grid-column: 1; font-size: 12.5px; color: #8a7d74; }
+.b-cond .v { grid-row: 1 / span 2; grid-column: 2; font: 800 30px/1 Archivo; font-variation-settings: "wdth" 62; color: #ff4f1a; }
+.b-cond.off .v { color: #c9beb6; }
+.b-spark { display: flex; align-items: end; gap: 3px; height: 54px; }
+.b-spark i { flex: 1; background: #17120f; border-radius: 3px 3px 0 0; }
+.b-spark i.lo { background: #d8cfc8; }
+.b-spark i.now { background: #ff4f1a; }
+.b-axis { display: flex; justify-content: space-between; font: 500 11px/1 "Geist Mono", monospace; color: #9b8f86; margin-top: 6px; }
+
+/* ============ C. DECK: a hand of cards dealt for you ============ */
+.C { --blue: #1f63ff; --tang: #ff7417; --mag: #e8357f; --ink: #15151b; background: #eef0f4; color: var(--ink); display: grid; grid-template-columns: 76px 1fr 300px; font-family: Geist, sans-serif; }
+.c-rail { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 0; }
+.c-mark { width: 32px; height: 32px; position: relative; margin-bottom: 18px; }
+.c-mark i { position: absolute; inset: 0; border-radius: 9px; }
+.c-mark i:nth-child(1) { background: var(--mag); transform: rotate(-14deg) translate(-3px, 1px); }
+.c-mark i:nth-child(2) { background: var(--tang); transform: rotate(-4deg); }
+.c-mark i:nth-child(3) { background: var(--blue); transform: rotate(8deg) translate(3px, 0); }
+.c-rail button { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; color: #7a7f8c; }
+.c-rail button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(20,24,40,.06), 0 8px 20px -10px rgba(20,24,40,.25); }
+.c-main { height: 800px; }
+.c-feed { height: 100%; padding: 26px 0 60px; }
+.c-col { width: 620px; margin: 0 auto; }
+.c-tray { display: flex; gap: 16px; padding: 4px 4px 18px; overflow: hidden; }
+.c-person { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 66px; flex: none; font-size: 12px; color: #4b5060; text-align: center; }
+.c-ring { width: 62px; height: 62px; border-radius: 50%; padding: 3px; background: conic-gradient(var(--c) var(--p, 100%), #d7dae2 0); display: grid; place-items: center; }
+.c-ring img, .c-ring span { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #eef0f4; }
+.c-ring span { display: grid; place-items: center; font: 750 20px/1 "Bricolage Grotesque"; color: #fff; background: linear-gradient(150deg, var(--c2, #ffa04d), var(--c)); }
+.c-person.all .c-ring span { background: var(--ink); font-size: 19px; }
+.c-person b { font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.c-stickers { display: flex; gap: 8px; margin: 0 4px 22px; flex-wrap: wrap; }
+.c-sticker { height: 38px; padding: 0 14px 0 8px; border-radius: 999px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; background: #fff; box-shadow: 0 1px 2px rgba(20,24,40,.06); color: #7a7f8c; transition: transform .2s; }
+.c-sticker:hover { transform: translateY(-1px) rotate(-1deg); }
+.c-sticker i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #e3e6ec; font-style: normal; font-size: 12px; color: #fff; }
+.c-sticker.on { color: var(--ink); }
+.c-sticker.on i { background: linear-gradient(150deg, #3ee3a6, #10b37a); box-shadow: 0 3px 8px -2px rgba(16,179,122,.6); }
+.c-card { position: relative; background: linear-gradient(#ffffff, #fbfbfd); border-radius: 30px; padding: 22px 22px 14px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(20,24,40,.05), 0 24px 40px -22px rgba(20,24,40,.28); animation: deal .7s cubic-bezier(.2,.9,.25,1.15) both; }
+.c-card:nth-child(1) { animation-delay: .05s; } .c-card:nth-child(2) { animation-delay: .15s; } .c-card:nth-child(3) { animation-delay: .25s; } .c-card:nth-child(4) { animation-delay: .35s; } .c-card:nth-child(5) { animation-delay: .45s; }
+@keyframes deal { from { opacity: 0; transform: translateY(40px) rotate(2.5deg) scale(.97); } }
+.c-stackwrap { position: relative; margin-bottom: 30px; }
+.c-stackwrap .ghost { position: absolute; inset: 0; border-radius: 30px; background: #fff; box-shadow: 0 1px 2px rgba(20,24,40,.05), 0 16px 30px -20px rgba(20,24,40,.3); transition: transform .45s cubic-bezier(.2,.9,.25,1.2); }
+.c-stackwrap .ghost.g1 { transform: translateY(14px) scale(.96); background: #f7f8fb; }
+.c-stackwrap .ghost.g2 { transform: translateY(26px) scale(.92); background: #f1f2f6; }
+.c-stackwrap:hover .ghost.g1 { transform: translate(18px, 16px) rotate(2.5deg) scale(.97); }
+.c-stackwrap:hover .ghost.g2 { transform: translate(34px, 30px) rotate(5deg) scale(.94); }
+.c-stackwrap .c-card { margin: 0; }
+.c-stacklabel { position: absolute; left: 50%; bottom: -24px; transform: translateX(-50%); z-index: 2; font: 600 12.5px/1 Geist; background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 999px; white-space: nowrap; box-shadow: 0 8px 18px -8px rgba(20,24,40,.6); }
+.c-who { display: flex; align-items: center; gap: 12px; }
+.c-av { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.c-av.txt { display: grid; place-items: center; font: 750 16px/1 "Bricolage Grotesque"; color: #fff; background: linear-gradient(150deg, #ffb057, var(--tang)); }
+.c-name { font-weight: 650; letter-spacing: -0.01em; }
+.c-meta { font-size: 13px; color: #7a7f8c; }
+.c-pill { margin-left: auto; height: 26px; padding: 0 10px 0 8px; border-radius: 999px; font: 650 12px/1 Geist; color: #fff; display: flex; align-items: center; gap: 6px; background: linear-gradient(150deg, var(--c2), var(--c)); box-shadow: 0 4px 10px -4px var(--c), inset 0 1px 0 rgba(255,255,255,.35); }
+.c-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.9); }
+.c-text { font-size: 17px; line-height: 1.5; margin: 14px 0 0; }
+.c-title { font: 700 30px/1.05 "Bricolage Grotesque"; font-variation-settings: "wdth" 85, "opsz" 48; letter-spacing: -0.02em; margin: 14px 0 8px; }
+.c-ex { color: #4b5060; margin: 0; }
+.c-media { margin-top: 14px; display: grid; gap: 6px; }
+.c-media.g4 { grid-template-columns: 1fr 1fr; }
+.c-media.g4 img { aspect-ratio: 1.2; object-fit: cover; border-radius: 16px; width: 100%; }
+.c-media.g4 img:first-child { border-top-left-radius: 22px; } .c-media.g4 img:nth-child(2) { border-top-right-radius: 22px; }
+.c-media.g1 img, .c-media.hero img { border-radius: 20px; width: 100%; max-height: 320px; object-fit: cover; object-position: top; }
+.c-foot { display: flex; gap: 6px; margin-top: 14px; align-items: center; }
+.c-foot button { height: 38px; padding: 0 14px; border-radius: 14px; display: flex; gap: 7px; align-items: center; font-size: 13.5px; font-weight: 550; background: #f1f2f6; color: #3d4250; }
+.c-foot button:hover { background: #e7e9ef; }
+.c-foot .why { margin-left: auto; background: none; color: #7a7f8c; font-weight: 500; }
+.c-side { padding: 30px 24px; display: flex; flex-direction: column; gap: 18px; }
+.c-hand { background: #fff; border-radius: 28px; padding: 22px; box-shadow: 0 1px 2px rgba(20,24,40,.05), 0 24px 40px -22px rgba(20,24,40,.28); }
+.c-hand .n { font: 800 84px/.9 "Bricolage Grotesque"; font-variation-settings: "wdth" 80, "opsz" 96; letter-spacing: -0.04em; }
+.c-hand p { margin: 6px 0 16px; color: #4b5060; }
+.c-bar { display: flex; height: 14px; border-radius: 99px; overflow: hidden; gap: 3px; }
+.c-bar i { display: block; height: 100%; border-radius: 99px; }
+.c-legend { display: grid; gap: 9px; margin-top: 16px; font-size: 13.5px; }
+.c-legend div { display: flex; align-items: center; gap: 9px; }
+.c-legend i { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.c-legend span { margin-left: auto; font: 600 13px/1 "Geist Mono", monospace; color: #4b5060; }
+.c-dark { background: var(--ink); color: #fff; border-radius: 28px; padding: 20px 22px; box-shadow: 0 30px 50px -25px rgba(20,24,40,.6); }
+.c-dark b { font: 750 30px/1 "Bricolage Grotesque"; font-variation-settings: "wdth" 80; letter-spacing: -0.02em; display: block; margin-bottom: 6px; }
+.c-dark p { margin: 0 0 14px; color: rgba(255,255,255,.7); font-size: 14px; }
+.c-dark button { height: 36px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.12); font-weight: 600; font-size: 13.5px; }
+</style>
+</head>
+<body>
+<header class="sheet-head">
+  <h1>Three futures for the same timeline</h1>
+  <p>Same skeleton, same filters, same real posts from the scratch library. Each one changes what the feed feels like, not how it works. Hover the cards; in Aurora, click the lenses at the bottom.</p>
+</header>
+
+<div class="label"><b>A</b><span>Aurora: your feed, lit by its own pictures</span>
+<em>Dark glass. Every post glows with colour taken from its own image or the poster's avatar, so the feed looks different every time. Filters become "lenses" in a floating dock: switch lens and the feed re-lights. Each post says, in one line, why it is lit.</em></div>
+<section class="frame A" id="A">
+  <nav class="a-rail"><div class="a-mark" aria-hidden="true"></div>
+    <button class="on" aria-label="Feed"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+    <button aria-label="Saved"><svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></button>
+    <button aria-label="Search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
+    <button aria-label="Sources"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5zM3 13l9 5 9-5"/></svg></button>
+  </nav>
+  <div class="a-main">
+    <div class="a-feed scroll"><div class="a-col">
+      <header class="a-head">
+        <div class="a-kick">Monday night · since you looked at 13:15</div>
+        <h1><span class="n" id="a-n">19</span> <span id="a-word">worth it</span></h1>
+        <p id="a-sub">17 more set aside by your rules. <u>See them</u></p>
+      </header>
+      <div id="a-posts"></div>
+    </div></div>
+    <div class="a-dock" role="tablist" aria-label="Lenses">
+      <button class="a-lens on" data-lens="worth" data-n="19" data-w="worth it"><b>Worth it</b><small>19 lit</small></button>
+      <button class="a-lens" data-lens="people" data-n="11" data-w="from people"><b>People</b><small>11 lit</small></button>
+      <button class="a-lens" data-lens="build" data-n="6" data-w="for builders"><b>Builders</b><small>6 lit</small></button>
+      <button class="a-lens" data-lens="all" data-n="135" data-w="in everything"><b>Everything</b><small>135</small></button>
+      <button class="a-lens add" aria-label="New lens"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+  </div>
+  <aside class="a-side">
+    <div><h3>This lens</h3>
+      <div class="a-rule"><div>Only what I haven't seen<small>hides 6</small></div><span class="a-sw on"></span></div>
+      <div class="a-rule"><div>Set noise aside<small>hides 9 · promos, bait</small></div><span class="a-sw on"></span></div>
+      <div class="a-rule"><div>One copy of each story<small>folds 2</small></div><span class="a-sw on"></span></div>
+      <div class="a-rule"><div>Mute "Emmys"<small>hides 3</small></div><span class="a-sw"></span></div>
+    </div>
+    <div><h3>Posted since you looked</h3><div class="a-ppl" id="a-ppl"></div></div>
+    <p class="a-note">All local. Nothing here likes, follows or unbookmarks anything on the original sites.</p>
+  </aside>
+</section>
+
+<div class="label"><b>B</b><span>Forecast: the weather report for your corner of the internet</span>
+<em>A colour-field "now" panel tells you the state of your feed at a glance: one big number, a sentence, and a radar of the day where each dot is a post (hollow ones were set aside). Topics become "fronts" you can turn off. The feed below runs on a clock, like a broadcast.</em></div>
+<section class="frame B" id="B">
+  <nav class="b-rail"><div class="b-mark" aria-hidden="true"></div>
+    <button class="on" aria-label="Feed"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+    <button aria-label="Saved"><svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></button>
+    <button aria-label="Search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
+    <button aria-label="Sources"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5zM3 13l9 5 9-5"/></svg></button>
+  </nav>
+  <div class="b-main scroll">
+    <section class="b-band">
+      <div class="b-top"><span>Monday 12 October · 21:40</span><span>3 sources · synced 4 min ago</span></div>
+      <div class="b-now">
+        <div class="b-big">19</div>
+        <div class="b-sum"><h2>Mostly people, a Python front</h2>
+          <p>19 posts worth reading since this morning. Daniel Radosh's sweater list is the busiest thing in your feed. 17 more were set aside: 9 noise, 6 already seen, 2 copies.</p></div>
+      </div>
+      <div class="b-radar"><svg id="b-radar" viewBox="0 0 1000 92" preserveAspectRatio="none" aria-label="Posts by hour today"></svg></div>
+    </section>
+    <div class="b-fronts"><span>Fronts</span>
+      <button class="b-front"><i>6</i>Software</button>
+      <button class="b-front"><i>4</i>Film</button>
+      <button class="b-front"><i>3</i>Bluesky news</button>
+      <button class="b-front"><i>2</i>AI and models</button>
+      <button class="b-front off"><i>3</i>Emmys, muted</button>
+    </div>
+    <div id="b-posts"></div>
+  </div>
+  <aside class="b-side">
+    <div><h3>Conditions</h3>
+      <div class="b-cond"><b>Noise</b><small>Set aside: promos, bait, bare reposts</small><span class="v">9</span></div>
+      <div class="b-cond"><b>Already seen</b><small>Hidden until you ask</small><span class="v">6</span></div>
+      <div class="b-cond"><b>Copies</b><small>One of each story</small><span class="v">2</span></div>
+      <div class="b-cond off"><b>Muted words</b><small>"giveaway", "thread 🧵"</small><span class="v">0</span></div>
+    </div>
+    <div><h3>This week</h3>
+      <div class="b-spark"><i style="height:40%"></i><i style="height:62%"></i><i class="lo" style="height:30%"></i><i style="height:55%"></i><i style="height:48%"></i><i class="lo" style="height:22%"></i><i class="now" style="height:90%"></i></div>
+      <div class="b-axis"><span>Tue</span><span>Mon</span></div>
+    </div>
+  </aside>
+</section>
+
+<div class="label"><b>C</b><span>Deck: a hand of cards dealt just for you</span>
+<em>Bright and tactile. Your people sit in a tray at the top with rings that fill with what is new. Every source owns a colour, used everywhere it appears. Posts are cards that deal in; several posts on one story sit as a stack you can fan out. Filters are stickers you press.</em></div>
+<section class="frame C" id="C">
+  <nav class="c-rail"><div class="c-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+    <button class="on" aria-label="Feed"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+    <button aria-label="Saved"><svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg></button>
+    <button aria-label="Search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
+    <button aria-label="Sources"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5zM3 13l9 5 9-5"/></svg></button>
+  </nav>
+  <div class="c-main"><div class="c-feed scroll"><div class="c-col">
+    <div class="c-tray" id="c-tray"></div>
+    <div class="c-stickers">
+      <button class="c-sticker on"><i>✓</i>Unseen only</button>
+      <button class="c-sticker on"><i>✓</i>No noise</button>
+      <button class="c-sticker on"><i>✓</i>One copy per story</button>
+      <button class="c-sticker"><i></i>Saved</button>
+      <button class="c-sticker"><i></i>Long reads</button>
+    </div>
+    <div id="c-posts"></div>
+  </div></div></div>
+  <aside class="c-side">
+    <div class="c-hand"><div class="n">19</div><p>cards in your hand tonight</p>
+      <div class="c-bar"><i style="flex:11;background:linear-gradient(150deg,#5b8cff,#1f63ff)"></i><i style="flex:6;background:linear-gradient(150deg,#ffa04d,#ff7417)"></i><i style="flex:2;background:linear-gradient(150deg,#ff6fa6,#e8357f)"></i></div>
+      <div class="c-legend">
+        <div><i style="background:#1f63ff"></i>Bluesky<span>11</span></div>
+        <div><i style="background:#ff7417"></i>Simon Willison's Weblog<span>6</span></div>
+        <div><i style="background:#e8357f"></i>Bookmarks<span>2</span></div>
+      </div>
+    </div>
+    <div class="c-dark"><b>17 set aside</b><p>9 noise, 6 already seen, 2 copies of stories you have.</p><button>Look through them</button></div>
+  </aside>
+</section>
+
+<script>
+const AV = {
+  radosh: 'https://cdn.bsky.app/img/avatar/plain/did:plc:curdc4nsriafv2j7y7ucgoub/bafkreical3ov766nqhyfjylifcddmr3celb7y2sbj4ptriu2ppwpfyt6ei',
+  maud: 'https://cdn.bsky.app/img/avatar/plain/did:plc:j54ofwzkxbeyjs6m2jwvwuro/bafkreic2uneip2pi3gbnuctef54pmm6v42avpouggd537fkwrme4qrok4y',
+  bart: 'https://cdn.bsky.app/img/avatar/plain/did:plc:qddhk5tchy7gdyws2l4srl47/bafkreicixas4uq2loow35lsbzczvp7sljj53qzukgsortkjrmu2qshliu4',
+  lacher: 'https://cdn.bsky.app/img/avatar/plain/did:plc:kpt756yhyqav7asgte6k7l7m/bafkreifgp23r77lzmxcuraujwxe42w2s3c46ioxjs7a7roy5x3jzffsk74',
+  ken: 'https://cdn.bsky.app/img/avatar/plain/did:plc:zbrhmanjs62oyqywjwdazxz3/bafkreicpymtnc6ooeoz4jyb5oaxbf6smrmsd634texeshjmfpths6qusta',
+  danielle: 'https://cdn.bsky.app/img/avatar/plain/did:plc:ydfn75us2pk4dhfvqejyla2p/bafkreib7zbjrocsnw5ht6fy5kepc7454britwohmn2zrj5rlsicmzisrmq',
+};
+const F = 'https://cdn.bsky.app/img/feed_fullsize/plain/';
+const POSTS = [
+  { id: 'sweaters', who: 'Daniel Radosh', handle: '@radosh.bsky.social', av: AV.radosh, src: 'Bluesky', c: '#1f63ff', c2: '#5b8cff', time: '11:43', ago: '10h', isNew: true, lens: ['worth', 'people', 'all'],
+    text: 'My kid has started a Letterboxd list called Killer Sweaters for films where the killer wears a great sweater and they\'ve asked me to throw it out to Bluesky for more because "that\'s the kind of thing those weirdos like to do"',
+    media: ['did:plc:curdc4nsriafv2j7y7ucgoub/bafkreiatozn3ta6yxgu7u5aujrlzadkmre5zku4nifnrgck22wyj2bcvje', 'did:plc:curdc4nsriafv2j7y7ucgoub/bafkreifsxgrfwmizjvfhg35s3aj73us2iwuujnrwgmi6aximgmc63pf5ti', 'did:plc:curdc4nsriafv2j7y7ucgoub/bafkreigj76sfkntp7rwlymp3rtf6gpd3wyogrikwjhq7pgg3lukdypklxa', 'did:plc:curdc4nsriafv2j7y7ucgoub/bafkreibdhcpdhbmnby6pabmcnltq7uj3bllevx3i2vxfrzdbth753rdka4'].map((m) => F + m),
+    why: 'someone you follow', tags: ['Film'] },
+  { id: 'python', who: "Simon Willison's Weblog", handle: 'simonwillison.net', initials: 'SW', src: 'Feed', c: '#ff7417', c2: '#ffa04d', time: '13:15', ago: '8h', isNew: true, lens: ['worth', 'build', 'all'], article: true,
+    title: 'Hello Python 3.15, goodbye 3.10, and now I can use 3.11',
+    text: "Python 3.15 is here! Here's the essential What's new in Python 3.15 guide, this year curated by 3.14 and 3.15 release manager Hugo van Kemenade.",
+    media: ['https://static.simonwillison.net/static/2026/profiler-output.webp'], mins: 4, why: 'topic Software', tags: ['Software'], stack: 'Python 3.15.0 added to actions/python-versions' },
+  { id: 'maud', who: 'maud', handle: '@peloriemate.net', av: AV.maud, src: 'Bluesky', c: '#1f63ff', c2: '#5b8cff', time: 'Sat', ago: '2d', lens: ['worth', 'people', 'all'],
+    text: 'i got so many people calling this tweet fakeposting back when i made it but since this is bluesky and things have less reach on here im just going to post the photo',
+    media: [F + 'did:plc:j54ofwzkxbeyjs6m2jwvwuro/bafkreih4c2dmipplscpctkaqwdw5f66dnx7jg4zbvrw2w3livwxgkndx5i'], why: 'someone you follow', tags: [] },
+  { id: 'lacher', who: 'Mike Lacher', handle: '@mikelacher.bsky.social', av: AV.lacher, src: 'Bluesky', c: '#1f63ff', c2: '#5b8cff', time: 'Thu', ago: '4d', lens: ['worth', 'people', 'all'],
+    text: 'i rebooted minesweeper as a AAA shooter. loot boxes coming soon minesweeper.mikelacher.com', media: [], why: 'someone you follow', tags: ['Games'] },
+  { id: 'voice', who: "Simon Willison's Weblog", handle: 'simonwillison.net', initials: 'SW', src: 'Feed', c: '#ff7417', c2: '#ffa04d', time: 'Fri', ago: '3d', lens: ['worth', 'build', 'all'], article: true,
+    title: 'A new feature for my blog, built using my voice',
+    text: 'I built the feature almost entirely using my voice, chatting away to my laptop while I cooked dinner.',
+    media: ['https://static.simonwillison.net/static/2026/codex-voice.webp'], mins: 6, why: 'topic AI and models', tags: ['AI and models'] },
+  { id: 'bart', who: 'BART', handle: '@bart.gov', av: AV.bart, src: 'Bluesky', c: '#1f63ff', c2: '#5b8cff', time: 'Thu', ago: '4d', lens: ['worth', 'people', 'all'],
+    text: 'train', media: [F + 'did:plc:qddhk5tchy7gdyws2l4srl47/bafkreiecgpw4xfwns6d3xsvvdytao5ma6f35yoiqdqpgd7vaxwexvvwd34'], why: 'someone you follow', tags: [] },
+  { id: 'ken', who: 'Ken Jennings', handle: '@kenjennings.bsky.social', av: AV.ken, src: 'Bluesky', c: '#1f63ff', c2: '#5b8cff', time: 'Sep 18', ago: '24d', lens: ['people', 'all'],
+    text: 'I don’t usually meddle on the writing side of Jeopardy!, but tonight I called in a favor for our Bluesky viewers.', media: [], why: 'someone you follow', tags: [] },
+];
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ico = {
+  save: '<svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v16l-6-4-6 4z"/></svg>',
+  col: '<svg class="i" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></svg>',
+  why: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
+  hide: '<svg class="i" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 9 6 9 6a17 17 0 0 1-3 3.4M6.6 6.6C4.3 8.1 3 12 3 12s4 6 9 6a8.6 8.6 0 0 0 4.2-1.1"/></svg>',
+  open: '<svg class="i" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></svg>',
+};
+const av = (p, cls) => p.av ? `<img class="${cls}" src="${p.av}" alt="">` : `<span class="${cls} txt">${p.initials}</span>`;
+const mediaCls = (p) => p.article ? 'hero' : p.media.length >= 4 ? 'g4' : 'g1';
+const media = (p, cls) => p.media.length ? `<div class="${cls} ${mediaCls(p)}">${p.media.slice(0, 4).map((m) => `<img src="${m}" alt="" loading="lazy">`).join('')}</div>` : '';
+
+// A
+document.getElementById('a-posts').innerHTML = POSTS.map((p) => `
+  <article class="a-post" data-lens="${p.lens.join(' ')}">
+    <div class="a-aura" style="background-image:url('${p.media[0] || p.av || ''}')${p.media[0] || p.av ? '' : ';background:radial-gradient(#ff9a3c,#ff5f3c)'}"></div>
+    <div class="a-card">
+      <div class="a-who">${av(p, 'a-av')}<div><div class="a-name">${esc(p.who)}${p.isNew ? '<span class="a-new" title="New since you looked"></span>' : ''}</div><div class="a-meta">${esc(p.handle)} · ${p.ago}</div></div></div>
+      ${p.article ? (p.media.length ? media(p, 'a-media') : '') + `<div class="a-title">${esc(p.title)}</div><p class="a-ex">${esc(p.text)}</p>` : `<p class="a-text">${esc(p.text)}</p>${media(p, 'a-media')}`}
+      <div class="a-foot"><button>${ico.save}</button><button>${ico.col}</button><button>${ico.hide}</button><button>${ico.open}</button>
+        <span class="a-why">lit by <i>${esc(p.why)}</i> · no noise</span></div>
+    </div>
+  </article>`).join('');
+document.getElementById('a-ppl').innerHTML = [AV.radosh, AV.maud, AV.lacher, AV.bart, AV.ken, AV.danielle].map((u, i) => `<img src="${u}" alt="" class="${i < 2 ? 'lit' : ''}">`).join('');
+document.querySelectorAll('.a-lens[data-lens]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.a-lens').forEach((x) => x.classList.toggle('on', x === b));
+  document.getElementById('a-n').textContent = b.dataset.n;
+  document.getElementById('a-word').textContent = b.dataset.w;
+  document.querySelectorAll('.a-post').forEach((el) => el.classList.toggle('gone', !el.dataset.lens.split(' ').includes(b.dataset.lens)));
+}));
+
+// B
+document.getElementById('b-posts').innerHTML = POSTS.map((p) => `
+  <article class="b-row">
+    <div class="b-time">${p.time}<small>${p.ago} ago</small></div>
+    <div>
+      <div class="b-who">${av(p, 'b-av')}<span class="b-name">${esc(p.who)}</span><span class="b-handle">${esc(p.handle)}</span><span class="b-src" style="--c:${p.c}">${p.src}</span></div>
+      ${p.article ? `<div class="b-title">${esc(p.title)}</div><p class="b-ex">${esc(p.text)}</p>${media(p, 'b-media')}` : `<p class="b-text">${esc(p.text)}</p>${media(p, 'b-media')}`}
+      <div class="b-tags"><span class="b-tag why">${esc(p.why)}</span>${p.tags.map((t) => `<span class="b-tag">#${esc(t.toLowerCase().replace(/ /g, ''))}</span>`).join('')}${p.article ? `<span class="b-tag">${p.mins} min read</span>` : ''}
+        <span class="b-acts"><button aria-label="Save">${ico.save}</button><button aria-label="Collect">${ico.col}</button><button aria-label="Why">${ico.why}</button><button aria-label="Hide">${ico.hide}</button><button aria-label="Open">${ico.open}</button></span></div>
+    </div>
+  </article>`).join('');
+// radar: 3 source rows x hours 06-22; filled = in feed, hollow = set aside
+(() => {
+  const rows = [['Bluesky', [7, 8, 9, 9, 11, 11, 12, 14, 15, 15, 16, 18, 19, 20, 21], [8, 10, 13, 17, 20]], ['Feeds', [9, 13, 13, 16, 18], [12, 19]], ['Imports', [10, 17], [17]]];
+  const x = (h) => 120 + ((h - 6) / 16) * 860;
+  let s = '';
+  rows.forEach(([name, kept, aside], r) => {
+    const y = 16 + r * 30;
+    s += `<text x="0" y="${y + 4}" font-family="Geist Mono" font-size="11" fill="#2b1206" opacity=".75">${name}</text>`;
+    s += `<line x1="120" x2="980" y1="${y}" y2="${y}" stroke="#1b0a03" stroke-opacity=".15"/>`;
+    kept.forEach((h, i) => { s += `<circle cx="${x(h + (i % 3) * 0.28)}" cy="${y}" r="6" fill="#1b0a03"/>`; });
+    aside.forEach((h) => { s += `<circle cx="${x(h + 0.5)}" cy="${y}" r="5.5" fill="none" stroke="#1b0a03" stroke-width="1.5" stroke-opacity=".6"/>`; });
+  });
+  s += `<line x1="${x(21.66)}" x2="${x(21.66)}" y1="2" y2="80" stroke="#fff" stroke-width="2"/><text x="${x(21.66) - 8}" y="90" text-anchor="end" font-family="Geist Mono" font-size="11" fill="#fff">now</text>`;
+  [6, 9, 12, 15, 18].forEach((h) => { s += `<text x="${x(h)}" y="90" font-family="Geist Mono" font-size="11" fill="#2b1206" opacity=".6">${String(h).padStart(2, '0')}:00</text>`; });
+  document.getElementById('b-radar').innerHTML = s;
+})();
+
+// C
+document.getElementById('c-tray').innerHTML = `<div class="c-person all"><div class="c-ring" style="--c:#15151b"><span>19</span></div><b>Everyone</b></div>` +
+  [['Daniel', AV.radosh, '100%', '#1f63ff'], ['maud', AV.maud, '100%', '#1f63ff'], ['Simon', null, '70%', '#ff7417'], ['Mike', AV.lacher, '45%', '#1f63ff'], ['BART', AV.bart, '30%', '#1f63ff'], ['Ken', AV.ken, '0%', '#1f63ff'], ['Danielle', AV.danielle, '0%', '#1f63ff']]
+    .map(([n, u, p, c]) => `<div class="c-person"><div class="c-ring" style="--c:${c};--p:${p}">${u ? `<img src="${u}" alt="">` : '<span style="--c:#ff7417;--c2:#ffb057">SW</span>'}</div><b>${n}</b></div>`).join('');
+document.getElementById('c-posts').innerHTML = POSTS.slice(0, 6).map((p) => {
+  const card = `
+  <article class="c-card">
+    <div class="c-who">${av(p, 'c-av')}<div><div class="c-name">${esc(p.who)}</div><div class="c-meta">${esc(p.handle)} · ${p.ago}</div></div><span class="c-pill" style="--c:${p.c};--c2:${p.c2}">${p.src}</span></div>
+    ${p.article ? `${media(p, 'c-media')}<div class="c-title">${esc(p.title)}</div><p class="c-ex">${esc(p.text)}</p>` : `<p class="c-text">${esc(p.text)}</p>${media(p, 'c-media')}`}
+    <div class="c-foot"><button>${ico.save}Save</button><button>${ico.col}Collect</button><button>${ico.hide}Hide</button><button class="why">${ico.why}${esc(p.why)}</button></div>
+  </article>`;
+  return p.stack ? `<div class="c-stackwrap"><div class="ghost g2"></div><div class="ghost g1"></div>${card}<span class="c-stacklabel">+1 more on Python 3.15 · fan out</span></div>` : card;
+}).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Social Reader — three directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=IBM+Plex+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:wght@400;600&family=Fraunces:opsz,wght@9..144,400;9..144,700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{background:#888;padding:40px;display:flex;flex-direction:column;gap:40px;font-family:system-ui}
+.frame{width:1280px;height:800px;overflow:hidden;position:relative;border-radius:10px;display:grid}
+.label{font:600 14px system-ui;color:#fff}
+
+/* ---------- A: Reading room after hours (place, dark, serif, amber, colour-material) */
+.a{background:#14120f;color:#ece4d6;grid-template-columns:220px 440px 1fr;font-family:'Atkinson Hyperlegible Next',system-ui}
+.a .rail{padding:28px 20px;border-right:1px solid #2a2620;display:flex;flex-direction:column;gap:22px}
+.a .brand{font:italic 400 22px 'Newsreader';color:#f3c76b}
+.a .rail h6{font:600 11px 'Atkinson Hyperlegible Next';letter-spacing:.06em;color:#8d8270;text-transform:uppercase;margin-bottom:8px}
+.a .rail a{display:flex;justify-content:space-between;color:#cfc5b3;font-size:14px;padding:6px 8px;border-radius:8px;text-decoration:none}
+.a .rail a.on{background:#2a241b;color:#f6e9cf}
+.a .rail a span{color:#8d8270}
+.a .list{border-right:1px solid #2a2620;overflow:hidden}
+.a .lhead{padding:28px 24px 14px}
+.a .lhead h1{font:400 34px/1 'Newsreader';letter-spacing:-.01em}
+.a .lhead p{color:#a2967f;font-size:13px;margin-top:8px}
+.a .chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 24px 16px;border-bottom:1px solid #2a2620}
+.a .chip{font-size:12px;padding:5px 10px;border-radius:99px;background:#221e18;color:#d8cdb8;border:1px solid #352f26}
+.a .chip.x{background:#3a2c12;border-color:#6b5222;color:#f3c76b}
+.a .row{padding:16px 24px;border-bottom:1px solid #221e18}
+.a .row.sel{background:linear-gradient(90deg,#2b2318,#1b1814)}
+.a .row .who{font-size:12px;color:#a2967f}
+.a .row .who b{color:#e9dcc4;font-weight:600}
+.a .row p{font:400 16px/1.4 'Newsreader';color:#e6dccb;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.a .reader{position:relative;padding:56px 72px;background:radial-gradient(80% 60% at 30% 0%,#3a2d17 0%,transparent 70%),#17140f}
+.a .reader .meta{font-size:13px;color:#b3a68c}
+.a .reader h2{font:400 40px/1.1 'Newsreader';letter-spacing:-.015em;margin:14px 0 22px;color:#fbf1de;max-width:560px}
+.a .reader .body{font:400 19px/1.6 'Newsreader';color:#e3d8c3;max-width:560px}
+.a .reader .why{margin-top:28px;font-size:13px;color:#c9b88f;border-top:1px solid #3a3226;padding-top:14px;max-width:560px}
+.a .reader .why b{color:#f3c76b}
+
+/* ---------- B: Sorting table for the post (object, light, expanded grotesque, identity palette per source, shape) */
+.b{background:#eef0f2;color:#15181c;grid-template-columns:76px 1fr 380px;font-family:'Bricolage Grotesque',system-ui;font-variation-settings:"wdth" 100}
+.b .rail{background:#15181c;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:14px}
+.b .tab{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:700 13px 'Bricolage Grotesque';color:#fff}
+.b .main{padding:28px 36px;overflow:hidden}
+.b h1{font:800 56px/0.95 'Bricolage Grotesque';font-variation-settings:"wdth" 75;letter-spacing:-.02em}
+.b .sub{font-size:15px;color:#4a525c;margin:10px 0 20px}
+.b .sieve{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.b .pill{font:600 13px 'Bricolage Grotesque';padding:8px 12px;border-radius:12px;background:#fff;box-shadow:0 1px 1px rgba(20,30,40,.06),0 6px 16px -8px rgba(20,30,40,.18);display:flex;gap:6px;align-items:center}
+.b .pill.neg{background:#15181c;color:#fff}
+.b .pill i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.b .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.b .card{background:linear-gradient(180deg,#fff,#fafbfc);border-radius:20px;padding:18px 20px;box-shadow:0 1px 1px rgba(20,30,40,.05),0 12px 28px -14px rgba(20,30,40,.22);position:relative;overflow:hidden}
+.b .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c)}
+.b .card .who{font:600 13px 'Bricolage Grotesque';display:flex;justify-content:space-between;color:#3b434c}
+.b .card .who span{color:#6b737c;font-weight:400}
+.b .card p{font:400 16px/1.42 'Atkinson Hyperlegible Next';margin-top:8px;color:#1d2126}
+.b .card .img{height:96px;border-radius:12px;margin-top:12px;background:linear-gradient(135deg,var(--c),#15181c)}
+.b .side{background:#fff;padding:28px;border-left:1px solid #dde1e5}
+.b .side h3{font:800 22px 'Bricolage Grotesque';font-variation-settings:"wdth" 80}
+.b .side .rule{margin-top:16px;padding:14px;border-radius:14px;background:#f3f5f7;font-size:14px}
+.b .side .rule b{display:block;font-size:12px;color:#6b737c;margin-bottom:4px;font-weight:600}
+
+/* ---------- C: Mixing desk (object, colour-field cobalt, mono, shape/faders) */
+.c{background:#1838c8;color:#fff;grid-template-columns:300px 1fr;font-family:'IBM Plex Mono',monospace}
+.c .desk{background:#0f2690;padding:28px 22px;display:flex;flex-direction:column;gap:18px}
+.c .desk h6{font:600 11px 'IBM Plex Mono';letter-spacing:.08em;color:#9fb1ff}
+.c .ch{display:grid;grid-template-columns:1fr 120px;align-items:center;gap:10px;font-size:13px}
+.c .fader{height:8px;border-radius:4px;background:#2a44b8;position:relative}
+.c .fader b{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#ffd23f}
+.c .main{padding:36px 44px;overflow:hidden}
+.c h1{font:700 64px/0.95 'Fraunces';letter-spacing:-.02em}
+.c .count{font-size:14px;color:#c8d2ff;margin:12px 0 26px}
+.c .post{background:#fff;color:#111;border-radius:6px;padding:18px 22px;margin-bottom:12px;display:grid;grid-template-columns:120px 1fr;gap:18px}
+.c .post .src{font-size:11px;color:#1838c8;font-weight:600}
+.c .post p{font:400 17px/1.45 'Fraunces';color:#16161a}
+.c .post .t{font-size:11px;color:#555;margin-top:4px}
+</style></head>
+<body>
+<div class="label">A · Social Reader is a reading room after hours</div>
+<section class="frame a" data-name="a-reading-room">
+  <nav class="rail">
+    <div class="brand">Social Reader</div>
+    <div><h6>Views</h6><a class="on">Worth reading <span>38</span></a><a>Saved <span>112</span></a><a>Long reads <span>9</span></a><a>Everything <span>1,204</span></a></div>
+    <div><h6>Sources</h6><a>X bookmarks <span>412</span></a><a>Bluesky · 3 people <span>188</span></a><a>Feeds · 14 <span>604</span></a></div>
+  </nav>
+  <div class="list">
+    <div class="lhead"><h1>Worth reading</h1><p>38 of 1,204 · 6 rules on · 211 hidden as noise</p></div>
+    <div class="chips"><span class="chip x">unread</span><span class="chip x">no replies</span><span class="chip x">mute “giveaway”</span><span class="chip">+ rule</span></div>
+    <div class="row sel"><div class="who"><b>Mara Quist</b> · @mquist · Bluesky · 2h</div><p>new zine page: what actually happens when you press ctrl-c in a terminal. the answer involves more signals than I expected</p></div>
+    <div class="row"><div class="who"><b>Teodor Lind</b> · lind.example · 5h</div><p>Notes on running a local model for structured extraction against 4,000 scanned receipts</p></div>
+    <div class="row"><div class="who"><b>Dev Okafor</b> · @devokafor · X bookmark · Oct 9</div><p>The most underrated skill in small business is writing an email that a busy person can answer in one word.</p></div>
+    <div class="row"><div class="who"><b>Small Heat Quarterly</b> · feed · Oct 8</div><p>How to heat the person, not the room: a short history of the foot warmer</p></div>
+    <div class="row"><div class="who"><b>Ines Varga</b> · @ivarga · Oct 7</div><p>I keep a list of “things that sound like formal methods but are actually just writing it down”</p></div>
+  </div>
+  <article class="reader">
+    <div class="meta">Mara Quist · @mquist on Bluesky · Oct 12, 5:41 pm</div>
+    <h2>What actually happens when you press ctrl-c in a terminal</h2>
+    <div class="body">new zine page! the answer involves more signals than I expected: the terminal driver turns the keystroke into SIGINT for the whole foreground process group, which is why your pipeline stops all at once.</div>
+    <div class="why"><b>Why it’s here:</b> topic Unix via “terminal” · unread · from a person you read often</div>
+  </article>
+</section>
+
+<div class="label">B · Social Reader is a sorting table for the post</div>
+<section class="frame b" data-name="b-sorting-table">
+  <nav class="rail"><div class="tab" style="background:#fff;color:#15181c">SR</div><div class="tab" style="background:#e8562a">X</div><div class="tab" style="background:#2f7df6">Bs</div><div class="tab" style="background:#1a9e6a">Rs</div><div class="tab" style="background:#f2b51d;color:#15181c">Im</div></nav>
+  <main class="main">
+    <h1>38 worth reading</h1>
+    <div class="sub">from 1,204 posts across 18 sources · 211 set aside as noise</div>
+    <div class="sieve"><span class="pill">unread</span><span class="pill">no replies</span><span class="pill neg">without “giveaway”</span><span class="pill"><i style="background:#2f7df6"></i>Bluesky</span><span class="pill"><i style="background:#e8562a"></i>X bookmarks</span><span class="pill">+ rule</span></div>
+    <div class="cards">
+      <div class="card" style="--c:#2f7df6"><div class="who">Mara Quist <span>Bluesky · 2h</span></div><p>new zine page: what actually happens when you press ctrl-c in a terminal. more signals than I expected</p><div class="img"></div></div>
+      <div class="card" style="--c:#1a9e6a"><div class="who">Teodor Lind <span>Feed · 5h</span></div><p>Notes on running a local model for structured extraction against 4,000 scanned receipts</p></div>
+      <div class="card" style="--c:#e8562a"><div class="who">Dev Okafor <span>X · Oct 9</span></div><p>The most underrated skill in small business is writing an email that a busy person can answer in one word.</p></div>
+      <div class="card" style="--c:#1a9e6a"><div class="who">Small Heat Quarterly <span>Feed · Oct 8</span></div><p>How to heat the person, not the room: a short history of the foot warmer</p></div>
+    </div>
+  </main>
+  <aside class="side"><h3>Why these 38</h3>
+    <div class="rule"><b>Kept</b>Unread, from people, no replies</div>
+    <div class="rule"><b>Set aside</b>211 noise · 64 duplicates · 12 muted words</div>
+    <div class="rule"><b>Sorted</b>Newest first</div>
+  </aside>
+</section>
+
+<div class="label">C · Social Reader is a mixing desk</div>
+<section class="frame c" data-name="c-mixing-desk">
+  <aside class="desk"><h6>CHANNELS</h6>
+    <div class="ch">X bookmarks<div class="fader"><b style="width:90%"></b></div></div>
+    <div class="ch">Bluesky<div class="fader"><b style="width:70%"></b></div></div>
+    <div class="ch">Feeds<div class="fader"><b style="width:55%"></b></div></div>
+    <div class="ch">Replies<div class="fader"><b style="width:0%"></b></div></div>
+    <div class="ch">Promo<div class="fader"><b style="width:0%"></b></div></div>
+    <h6>MUTE</h6><div class="ch">giveaway, crypto, “thread 🧵”</div>
+  </aside>
+  <main class="main"><h1>The mix</h1><div class="count">38 OF 1,204 · 211 NOISE OUT</div>
+    <div class="post"><div><div class="src">BLUESKY</div><div class="t">@mquist · 2h</div></div><p>new zine page: what actually happens when you press ctrl-c in a terminal</p></div>
+    <div class="post"><div><div class="src">FEED</div><div class="t">lind.example · 5h</div></div><p>Notes on running a local model for structured extraction against 4,000 scanned receipts</p></div>
+    <div class="post"><div><div class="src">X BOOKMARK</div><div class="t">@devokafor · Oct 9</div></div><p>The most underrated skill in small business is writing an email a busy person can answer in one word.</p></div>
+  </main>
+</section>
+</body></html>

@@ -1,0 +1,117 @@
+{
+  "name": "aurora-desktop",
+  "private": true,
+  "productName": "Aurora",
+  "version": "0.1.0",
+  "description": "Aurora, your private agentic social reader, as a desktop app",
+  "main": "main.cjs",
+  "author": "Aurora",
+  "license": "UNLICENSED",
+  "homepage": "http://127.0.0.1/",
+  "desktopName": "aurora.desktop",
+  "scripts": {
+    "dev": "electron .",
+    "stage": "node scripts/stage.mjs && node scripts/fetch-node.mjs",
+    "dist": "npm run stage && electron-builder --publish never",
+    "dist:linux": "npm run stage && electron-builder --linux AppImage deb --publish never",
+    "dist:mac": "npm run stage && electron-builder --mac dmg --publish never",
+    "dist:win": "npm run stage && electron-builder --win nsis --publish never",
+    "icons": "node scripts/render-icons.mjs"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "app.aurora.desktop",
+    "productName": "Aurora",
+    "executableName": "aurora",
+    "copyright": "Aurora",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "loading.html",
+      "assets/**",
+      "package.json"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "assets/**"
+    ],
+    "extraResources": [
+      {
+        "from": "build",
+        "to": ".",
+        "filter": [
+          "aurora/**/*",
+          "node/**/*"
+        ]
+      }
+    ],
+    "protocols": [
+      {
+        "name": "Aurora link",
+        "schemes": [
+          "aurora"
+        ]
+      }
+    ],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "loadBrowserProcessSpecificV8Snapshot": false,
+      "grantFileProtocolExtraPrivileges": false
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets",
+      "category": "Network;News",
+      "synopsis": "Your private agentic social reader",
+      "maintainer": "Aurora <aurora@localhost>",
+      "syncDesktopName": true
+    },
+    "deb": {
+      "depends": [
+        "libnotify4",
+        "libsecret-1-0"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.news",
+      "executableName": "Aurora",
+      "hardenedRuntime": false,
+      "identity": "-"
+    },
+    "dmg": {
+      "title": "Aurora"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/256x256.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Aurora"
+    }
+  }
+}

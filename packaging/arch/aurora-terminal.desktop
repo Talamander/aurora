@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora (terminal)
+Comment=Your Aurora feed in the terminal
+Exec=aurora
+Terminal=true
+Icon=aurora
+Categories=Network;News;

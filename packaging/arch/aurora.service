@@ -1,0 +1,19 @@
+# systemd user unit from the aurora-reader package. Enable it with:
+#   systemctl --user enable --now aurora
+# Data: ~/.local/share/aurora (or $XDG_DATA_HOME/aurora). Listens on 127.0.0.1:4317 only.
+# Change the port with `systemctl --user edit aurora` and an Environment=PORT=... line.
+[Unit]
+Description=Aurora, your private agentic social feed
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/aurora-server
+Environment=HOST=127.0.0.1
+Environment=PORT=4317
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

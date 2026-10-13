@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora (terminal)
+Comment=Your Aurora feed in the terminal
+Exec=sh -c 'cd "$HOME/Projects/social-reader" && exec node cli/aurora.ts'
+Terminal=true
+Icon=aurora
+Categories=Network;News;

@@ -1,0 +1,4 @@
+/* Profile hours in the profile sheet: the switch-or-suggest choice and the plain-English read-back. */
+.prof-hours-row { flex-basis: 100%; }
+.prof-sched .prof-times input { width: 136px; }
+.prof-hours-readback { flex-basis: 100%; margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }

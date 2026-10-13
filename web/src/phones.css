@@ -1,0 +1,16 @@
+/* Phones: pairing the mobile app (Settings > AI > Phones). */
+.phones code { font: 500 12px/1.4 var(--mono, ui-monospace, monospace); background: var(--raised); padding: 1px 5px; border-radius: 6px; word-break: break-all; }
+.phones-warn { color: var(--ink); border-left: 3px solid var(--lamp); padding-left: 10px; }
+.phones-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.phones-list li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.phones-list li:last-child { border-bottom: 0; }
+.phones-name { font-weight: 600; }
+.phones-meta { color: var(--ink-3); font-size: 12px; margin: 0; flex: 1; }
+.phones-pair { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.phones-qr { width: 196px; height: 196px; border-radius: 14px; background: #fff; padding: 4px; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--line), 0 18px 40px -20px color-mix(in srgb, var(--lamp) 60%, transparent); }
+.phones-side { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.phones-side p { margin: 0; }
+.phones-ask { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.phones-ask p { margin: 0; color: var(--ink-2); }
+.phones-check { font: 680 22px/1 var(--mono, ui-monospace, monospace); letter-spacing: .12em; color: var(--ink); }
+.phones-actions { display: flex; gap: 8px; margin-top: 6px; }

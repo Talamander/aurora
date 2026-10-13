@@ -1,0 +1,63 @@
+/* Full-text search: Best matches above the feed, and the More like this sheet. */
+
+.best-matches {
+  position: relative;
+  margin: 0 0 14px;
+  padding: 12px 12px 8px;
+  border-radius: 18px;
+  background: var(--card, var(--surface));
+  border: 1px solid var(--card-line, var(--line));
+  overflow: hidden;
+  isolation: isolate;
+}
+/* A thin lit edge on top so the block reads as "the app's answer", not one more post. */
+.best-matches::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--lit); opacity: 0.9;
+}
+.best-matches::after {
+  content: ''; position: absolute; inset: -40% -10% auto -10%; height: 120px; z-index: -1;
+  background: var(--lit-soft); opacity: 0.12; filter: blur(40px); pointer-events: none;
+}
+.bm-head { display: flex; align-items: center; gap: 10px; padding: 2px 6px 8px; }
+.bm-kick { display: inline-flex; align-items: center; gap: 6px; font: 600 11.5px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--lamp-ink); }
+.bm-count { flex: 1; min-width: 0; color: var(--ink-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.bm-row {
+  width: 100%; display: flex; align-items: flex-start; gap: 11px; text-align: left; padding: 9px 8px; border-radius: 12px;
+  background: none; border: 0; color: inherit; font: inherit; cursor: pointer; transition: background 120ms ease;
+}
+.bm-row:hover, .bm-row:focus-visible { background: var(--lamp-wash); }
+.bm-row:focus-visible { outline: 2px solid var(--lamp); outline-offset: -2px; }
+.bm-av { flex: none; width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-top: 1px; background: var(--raised); }
+.bm-av.initials { display: grid; place-items: center; font: 650 11px/1 var(--ui); color: var(--ink-2); }
+.bm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.bm-who { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bm-who b { color: var(--ink); font-weight: 640; }
+.bm-meta { color: var(--ink-3); }
+.bm-title { font: 640 15px/1.3 var(--ui); letter-spacing: -0.012em; color: var(--ink); }
+.bm-snip { font-size: 14px; line-height: 1.5; color: var(--ink-2); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.bm-snip mark, .rel-of mark {
+  background: var(--lamp-soft); color: var(--ink); border-radius: 4px; padding: 0 2px; margin: 0 -1px;
+  box-shadow: inset 0 -1.5px 0 color-mix(in srgb, var(--lamp) 55%, transparent);
+}
+.bm-go { flex: none; align-self: center; color: var(--ink-3); transform: rotate(180deg); display: inline-flex; opacity: 0; transition: opacity 120ms ease; }
+.bm-row:hover .bm-go, .bm-row:focus-visible .bm-go { opacity: 1; }
+.bm-building { margin: 0 0 12px; color: var(--ink-3); font: 500 12px/1.4 var(--mono); }
+
+.related-sheet .sheet-body { display: flex; flex-direction: column; gap: 12px; }
+.rel-of { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--raised); color: var(--ink-2); font-size: 14px; line-height: 1.45; }
+.rel-of b { color: var(--ink); }
+.rel-empty { color: var(--ink-3); margin: 8px 4px; }
+.rel-why { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.rel-tag, .rel-word { font: 500 11.5px/1 var(--mono); padding: 4px 7px; border-radius: 99px; }
+.rel-tag { background: var(--lamp-wash); color: var(--lamp-ink); }
+.rel-word { background: var(--raised); color: var(--ink-2); }
+.related-sheet .bm-snip { display: block; -webkit-line-clamp: unset; }
+
+@media (max-width: 760px) {
+  .best-matches { margin: 0 12px 12px; border-radius: 16px; }
+  .bm-count { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bm-row, .bm-go { transition: none; }
+}

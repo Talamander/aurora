@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="sky" cx=".5" cy="1.05" r="1.1">
+      <stop offset="0" stop-color="#1a1030"/>
+      <stop offset=".55" stop-color="#0b0a16"/>
+      <stop offset="1" stop-color="#05060a"/>
+    </radialGradient>
+    <linearGradient id="r1" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffc56b"/>
+      <stop offset=".5" stop-color="#ff7a9c"/>
+      <stop offset="1" stop-color="#a69bff"/>
+    </linearGradient>
+    <linearGradient id="r2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7ef0d0"/>
+      <stop offset="1" stop-color="#a69bff"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".35" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".3"/>
+    </linearGradient>
+    <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><rect width="512" height="512" fill="url(#fade)"/></mask>
+    <filter id="blur" x="-60%" y="-60%" width="220%" height="220%" filterUnits="objectBoundingBox"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#sky)"/>
+  <g mask="url(#m)">
+    <path d="M96 392 C 150 250, 214 150, 256 112 C 298 150, 362 250, 416 392" fill="none" stroke="url(#r1)" stroke-width="58" stroke-linecap="round" filter="url(#blur)" opacity=".75"/>
+    <path d="M96 392 C 150 250, 214 150, 256 112 C 298 150, 362 250, 416 392" fill="none" stroke="url(#r1)" stroke-width="34" stroke-linecap="round"/>
+    <path d="M170 306 C 214 280, 262 330, 342 292" fill="none" stroke="url(#r2)" stroke-width="22" stroke-linecap="round" opacity=".95"/>
+  </g>
+  <circle cx="356" cy="150" r="9" fill="#eef0f6" opacity=".85"/>
+  <circle cx="150" cy="176" r="5" fill="#eef0f6" opacity=".55"/>
+</svg>

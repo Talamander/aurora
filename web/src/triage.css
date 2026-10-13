@@ -1,0 +1,155 @@
+/* Triage: one big card at a time over the post's own light. */
+.tri {
+  --tri-keep: #0b9a80;
+  --tri-later: #c77a06;
+  --tri-hide: #d23a6c;
+  --tri-skip: var(--ink-3);
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; grid-template-rows: auto 1fr auto;
+  background: var(--ground); color: var(--ink);
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  overflow: hidden; outline: none;
+  animation: tri-in 220ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+:root[data-theme='dark'] .tri { --tri-keep: #4fe0c6; --tri-later: #ffc56b; --tri-hide: #ff7a9c; }
+@keyframes tri-in { from { opacity: 0; transform: scale(1.015); } }
+
+/* The light behind the deck: the current post's picture, blurred into a glow. */
+.tri-sky { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.tri-aura {
+  position: absolute; inset: -12%; background-size: cover; background-position: center;
+  filter: blur(90px) saturate(var(--aura-sat)); opacity: calc(var(--aura-op) * 0.9);
+  animation: tri-aura-in 420ms ease both;
+}
+.tri-aura.plain { background: radial-gradient(40% 50% at 30% 30%, #f08a24, transparent), radial-gradient(45% 55% at 70% 40%, #e8467c, transparent), radial-gradient(50% 50% at 50% 80%, #6d5cf0, transparent); opacity: calc(var(--aura-op) * 0.55); }
+@keyframes tri-aura-in { from { opacity: 0; } }
+.tri-sky::after { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%, transparent 30%, var(--ground) 92%); }
+
+/* While dragging, the edge the card is heading for lights up in that choice's colour. */
+.tri-edge { position: absolute; inset: 0; pointer-events: none; transition: opacity 120ms; z-index: 1; }
+.tri-edge.keep { background: radial-gradient(60% 80% at 100% 50%, color-mix(in srgb, var(--tri-keep) 70%, transparent), transparent 75%); }
+.tri-edge.hide { background: radial-gradient(60% 80% at 0% 50%, color-mix(in srgb, var(--tri-hide) 70%, transparent), transparent 75%); }
+.tri-edge.later { background: radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--tri-later) 70%, transparent), transparent 75%); }
+.tri-edge.skip { background: radial-gradient(80% 60% at 50% 100%, color-mix(in srgb, var(--tri-skip) 45%, transparent), transparent 70%); }
+
+.tri-progress { position: absolute; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 2px; background: color-mix(in srgb, var(--ink) 8%, transparent); z-index: 3; }
+.tri-progress span { display: block; height: 100%; background: var(--lit); transform-origin: left; transition: transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1); }
+
+.tri-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px clamp(16px, 4vw, 40px) 6px; }
+.tri-head h2 { margin: 0; font: 680 22px/1.1 var(--ui); letter-spacing: -0.04em; }
+.tri-count { margin: 3px 0 0; font: 500 12px/1 var(--mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.tri-head-tools { display: flex; gap: 4px; }
+.tri-head-tools .icon-btn { width: 44px; height: 44px; border-radius: 14px; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.tri-head-tools .icon-btn:disabled { opacity: 0.4; }
+
+/* The stage holds the top card, two peeking behind it, and the one leaving. */
+.tri-stage { position: relative; z-index: 2; align-self: stretch; height: 100%; box-sizing: border-box; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; padding: 8px clamp(16px, 4vw, 40px); min-height: 0; }
+.tri-deck { grid-area: 1 / 1; position: relative; width: min(620px, 100%); max-height: 100%; display: flex; flex-direction: column; }
+.tri-deck::before, .tri-deck::after {
+  content: ''; position: absolute; inset: 0; border-radius: 28px; pointer-events: none;
+  background: var(--card); border: 1px solid var(--card-line); box-shadow: var(--float-shadow);
+  transition: transform 200ms cubic-bezier(0.2, 0.9, 0.25, 1), opacity 200ms;
+}
+.tri-deck::before { transform: translateY(14px) scale(0.955); opacity: 0.75; z-index: 1; }
+.tri-deck::after { transform: translateY(27px) scale(0.91); opacity: 0.4; z-index: 0; }
+.tri-deck[data-behind='1']::after, .tri-deck[data-behind='0']::after, .tri-deck[data-behind='0']::before { opacity: 0; }
+.tri-card {
+  grid-area: 1 / 1; width: min(620px, 100%); max-height: 100%; min-height: min(440px, 58vh); flex: 0 1 auto;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--card); border: 1px solid var(--card-line); border-radius: 28px;
+  backdrop-filter: blur(28px) saturate(1.3); -webkit-backdrop-filter: blur(28px) saturate(1.3);
+  box-shadow: var(--float-shadow), 0 40px 90px -40px rgba(0, 0, 0, 0.45);
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  transition: transform 200ms cubic-bezier(0.2, 0.9, 0.25, 1), opacity 200ms;
+  will-change: transform;
+}
+.tri-card.top { cursor: grab; z-index: 3; position: relative; width: 100%; }
+.tri-card.top.dragging { cursor: grabbing; }
+.tri-card.top.arrive { animation: tri-arrive 190ms cubic-bezier(0.2, 0.9, 0.25, 1); }
+@keyframes tri-arrive { from { transform: translateY(14px) scale(0.965); opacity: 0.6; } }
+.tri-card.leaving { z-index: 4; pointer-events: none; animation: 180ms cubic-bezier(0.4, 0, 0.9, 0.6) forwards; }
+.tri-card.out-keep { animation-name: tri-out-keep; }
+.tri-card.out-hide { animation-name: tri-out-hide; }
+.tri-card.out-later { animation-name: tri-out-later; }
+.tri-card.out-skip { animation-name: tri-out-skip; }
+@keyframes tri-out-keep { to { transform: translateX(70vw) rotate(12deg); opacity: 0; box-shadow: 0 0 60px var(--tri-keep); } }
+@keyframes tri-out-hide { to { transform: translateX(-70vw) rotate(-12deg); opacity: 0; } }
+@keyframes tri-out-later { to { transform: translateY(-60vh) scale(0.9); opacity: 0; } }
+@keyframes tri-out-skip { to { transform: translateY(50vh) scale(0.94); opacity: 0; } }
+
+.tri-pic { display: block; width: 100%; max-height: 46vh; min-height: 0; object-fit: cover; flex: none; background: var(--raised); pointer-events: none; }
+.tri-body { padding: 20px 24px 22px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 12px; }
+.tri-by { display: flex; align-items: center; gap: 11px; }
+.tri-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink) 10%, transparent); }
+.tri-av.initials { display: grid; place-items: center; background: var(--lit-soft); color: var(--on-lit); font: 650 16px/1 var(--ui); }
+.tri-who { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tri-who strong { font: 640 15.5px/1.2 var(--ui); letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tri-who span { font-size: 12.5px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tri-title { margin: 2px 0 0; font: 680 clamp(22px, 3.2vw, 30px)/1.12 var(--ui); letter-spacing: -0.035em; text-wrap: balance; overflow-wrap: anywhere; }
+.tri-text { font-size: 18px; line-height: 1.5; color: var(--ink); overflow: hidden; overflow-wrap: anywhere; -webkit-mask-image: linear-gradient(#000 calc(100% - 48px), transparent); mask-image: linear-gradient(#000 calc(100% - 48px), transparent); }
+.tri-card.has-pic .tri-text { font-size: 16.5px; }
+.tri-card.no-pic .tri-text { font-size: clamp(19px, 2.2vw, 23px); line-height: 1.45; letter-spacing: -0.01em; }
+.tri-card.no-pic .tri-body { flex: 1; }
+.tri-card.no-pic .tri-title { margin-top: auto; }
+.tri-card.no-pic .tri-title + .tri-text, .tri-card.no-pic .tri-by + .tri-text { margin-bottom: auto; }
+.tri-card.no-pic .tri-by + .tri-text { margin-top: auto; }
+.tri-text p { margin: 0 0 0.6em; }
+.tri-text p:last-child { margin-bottom: 0; }
+
+/* The four choices, in arrow order. */
+.tri-bar { position: relative; z-index: 2; display: flex; justify-content: center; gap: 10px; padding: 10px 16px 22px; }
+.tri-act {
+  --c: var(--tri-skip);
+  display: grid; grid-template-columns: auto auto; align-items: center; gap: 2px 10px; min-width: 116px; min-height: 56px;
+  padding: 8px 16px 8px 10px; border-radius: 18px; color: var(--ink);
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  transition: transform 120ms, border-color 120ms, background 120ms;
+}
+.tri-act.keep { --c: var(--tri-keep); }
+.tri-act.later { --c: var(--tri-later); }
+.tri-act.hide { --c: var(--tri-hide); }
+.tri-act:hover, .tri-act.hot { border-color: color-mix(in srgb, var(--c) 70%, transparent); background: color-mix(in srgb, var(--c) 14%, var(--glass)); }
+.tri-act.hot { transform: translateY(-2px); }
+.tri-act:active { transform: scale(0.96); }
+.tri-act-ic { grid-row: span 2; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 18%, transparent); color: color-mix(in srgb, var(--c) 70%, var(--ink)); }
+.tri-act.skip .tri-act-ic { color: var(--ink-2); }
+.tri-act-label { font: 620 14.5px/1 var(--ui); text-align: left; }
+.tri-act kbd { font: 500 14px/1 var(--ui); color: var(--ink-3); text-align: left; background: none; border: 0; padding: 0; }
+
+/* The end of the deck: a slow breath of colour and the tally. */
+.tri-end { grid-area: 1 / 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px; animation: tri-arrive 300ms ease; }
+.tri-orb { width: 168px; height: 168px; border-radius: 50%; margin-bottom: 18px; background: conic-gradient(from 200deg, #f08a24, #e8467c, #6d5cf0, #0ea589, #f08a24); filter: blur(22px); opacity: 0.75; animation: tri-breathe 6s ease-in-out infinite; }
+@keyframes tri-breathe { 50% { transform: scale(1.12) rotate(40deg); opacity: 0.95; } }
+.tri-end h3 { margin: 0; font: 680 clamp(28px, 4vw, 40px)/1.1 var(--ui); letter-spacing: -0.045em; }
+.tri-end p { margin: 0; max-width: 34ch; font-size: 16px; line-height: 1.5; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.tri-end-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+
+/* Phone: the card fills the width and the choices sit under the thumb. */
+@media (max-width: 700px) {
+  .tri-head { padding-top: 12px; }
+  .tri-stage { padding: 6px 12px; }
+  .tri-card, .tri-deck::before, .tri-deck::after { border-radius: 24px; }
+  /* A tall narrow tile (480x1400) would stretch one short post into a 1200px card. */
+  .tri-deck { height: min(100%, 760px); }
+  .tri-card.top { flex: 1; }
+  .tri-pic { max-height: 34vh; }
+  .tri-body { padding: 16px 18px 18px; gap: 10px; }
+  .tri-text, .tri-card.has-pic .tri-text { font-size: 16px; }
+  .tri-card.no-pic .tri-text { font-size: 19px; }
+  .tri-bar { gap: 6px; padding: 8px 12px 14px; }
+  .tri-act { min-width: 0; flex: 1; grid-template-columns: 1fr; justify-items: center; gap: 4px; padding: 8px 4px; min-height: 64px; }
+  .tri-act-ic { grid-row: auto; width: 34px; height: 34px; }
+  .tri-act-label { font-size: 12.5px; text-align: center; }
+  .tri-act kbd { display: none; }
+}
+
+/* Reduced motion: no flying cards, a short crossfade instead. */
+.tri.still, .tri.still .tri-card, .tri.still .tri-end { animation-duration: 1ms; }
+.tri.still .tri-card { transition: opacity 140ms; }
+.tri.still .tri-card.leaving { animation: tri-fade 140ms linear forwards; }
+.tri.still .tri-card.top.arrive { animation: tri-fade-in 140ms linear; }
+.tri.still .tri-orb { animation: none; }
+@keyframes tri-fade { to { opacity: 0; } }
+@keyframes tri-fade-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tri-orb { animation: none; } .tri-progress span { transition: none; } }

@@ -1,0 +1,10 @@
+// Add "custom/aurora" to a modules-* list in ~/.config/waybar/config.jsonc, then paste this block.
+// Left click opens Aurora, right click opens it in the terminal. Updates every 2 minutes.
+"custom/aurora": {
+  "exec": "node $HOME/Projects/social-reader/cli/aurora.ts status --waybar",
+  "return-type": "json",
+  "interval": 120,
+  "tooltip": true,
+  "on-click": "omarchy-launch-webapp http://127.0.0.1:4317",
+  "on-click-right": "omarchy-launch-tui --app-id=org.omarchy.aurora node $HOME/Projects/social-reader/cli/aurora.ts"
+}

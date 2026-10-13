@@ -1,0 +1,242 @@
+/* Ambient: a dark, cinematic canvas whatever the app's theme, because it lives on TVs and second
+   screens in dim rooms. Pictures drift over a sky blurred from themselves; text slides get a slow
+   three-colour aurora tinted per person (--h1..--h3). Controls fade away when nobody moves. */
+
+.amb {
+  position: fixed;
+  inset: 0;
+  z-index: 59; /* the app's toasts (60) stay above, so Undo after a hide is reachable */
+  background: #040509;
+  color: #f4f1ea;
+  overflow: hidden;
+  isolation: isolate;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  color-scheme: dark;
+  font-family: var(--ui);
+  animation: amb-open 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --amb-ink-2: rgba(244, 241, 234, 0.84);
+  --amb-ink-3: rgba(244, 241, 234, 0.5);
+  --amb-glass: rgba(14, 15, 22, 0.52);
+  --amb-line: rgba(255, 255, 255, 0.12);
+}
+.amb:not(.awake) { cursor: none; }
+@keyframes amb-open { from { opacity: 0; } }
+.amb .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+html.ambient-on .toasts { bottom: 112px; }
+
+.amb-stage { position: absolute; inset: 0; }
+
+/* ---------------------------------------------------------------- one slide */
+
+.amb-slide { position: absolute; inset: 0; overflow: hidden; }
+.amb-slide.in { animation: amb-fade-in 1.6s ease both; z-index: 2; }
+.amb-slide.out { animation: amb-fade-out 1.6s ease both; z-index: 1; }
+@keyframes amb-fade-in { from { opacity: 0; } }
+@keyframes amb-fade-out { to { opacity: 0; } }
+
+/* The picture's own colours as a sky. */
+.amb-sky-img {
+  position: absolute; inset: -12%; width: 124%; height: 124%; object-fit: cover;
+  filter: blur(70px) saturate(1.7) brightness(0.62);
+  transform: scale(1.1);
+  animation: amb-breathe 40s ease-in-out infinite alternate;
+}
+.amb-shade { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, transparent 30%, rgba(3, 4, 8, 0.55) 100%); }
+@keyframes amb-breathe { from { transform: scale(1.1) rotate(0deg); } to { transform: scale(1.22) rotate(4deg); } }
+
+/* A drifting aurora for slides without a picture. */
+.amb-sky { position: absolute; inset: -15%; filter: blur(90px) saturate(1.2); opacity: 0.7; }
+.amb-sky span { position: absolute; border-radius: 50%; mix-blend-mode: screen; animation: amb-drift 26s ease-in-out infinite alternate; }
+.amb-sky span:nth-child(1) { left: 0; top: 6%; width: 62%; height: 42%; background: hsl(var(--h1) 72% 52%); transform: rotate(-14deg); }
+.amb-sky span:nth-child(2) { left: 34%; top: -4%; width: 58%; height: 46%; background: hsl(var(--h2) 70% 46%); animation-duration: 33s; animation-delay: -9s; }
+.amb-sky span:nth-child(3) { left: 18%; bottom: -6%; width: 70%; height: 40%; background: hsl(var(--h3) 62% 38%); animation-duration: 41s; animation-delay: -17s; opacity: 0.8; }
+@keyframes amb-drift { from { translate: -6% -3%; } to { translate: 7% 6%; } }
+
+/* The picture itself: full-bleed when its shape fits the screen, whole over its sky when not. */
+.amb-frame { position: absolute; inset: 0; display: grid; place-items: center; }
+.amb-frame.loading .amb-pic { opacity: 0; }
+.amb-pic { display: block; transition: opacity 0.6s ease; will-change: transform; }
+.amb-frame.cover .amb-pic { width: 100%; height: 100%; object-fit: cover; }
+.amb-frame.contain { padding: clamp(28px, 6vh, 72px) clamp(20px, 5vw, 80px) clamp(120px, 20vh, 200px); }
+.amb-frame.contain .amb-pic {
+  max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 14px;
+  box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.amb-pic.kb { animation: var(--kb-ms) linear both; }
+.amb-frame.cover .kb-0 { animation-name: kb-0; }
+.amb-frame.cover .kb-1 { animation-name: kb-1; }
+.amb-frame.cover .kb-2 { animation-name: kb-2; }
+.amb-frame.cover .kb-3 { animation-name: kb-3; }
+.amb-frame.contain .kb { animation-name: kb-soft; }
+@keyframes kb-0 { from { transform: scale(1.02) translate(0, 0); } to { transform: scale(1.14) translate(-2.5%, -1.5%); } }
+@keyframes kb-1 { from { transform: scale(1.14) translate(2%, 1%); } to { transform: scale(1.03) translate(0, 0); } }
+@keyframes kb-2 { from { transform: scale(1.04) translate(2%, -1%); } to { transform: scale(1.15) translate(-1%, 2%); } }
+@keyframes kb-3 { from { transform: scale(1.12) translate(-2%, 1.5%); } to { transform: scale(1.02) translate(1.5%, -1%); } }
+@keyframes kb-soft { from { transform: scale(1); } to { transform: scale(1.045); } }
+
+.amb-scrim { position: absolute; inset: auto 0 0; height: 46%; background: linear-gradient(to top, rgba(3, 4, 8, 0.82), rgba(3, 4, 8, 0.4) 50%, transparent); pointer-events: none; }
+.amb-caption {
+  position: absolute; left: clamp(20px, 5vw, 72px); right: clamp(20px, 5vw, 72px); bottom: clamp(28px, 7vh, 72px);
+  max-width: 920px; display: grid; gap: 16px; justify-items: start;
+  animation: amb-rise 1.8s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: translate 0.5s ease;
+}
+/* Lift the caption clear of the toolbar while the controls show. */
+.amb.awake .amb-caption { translate: 0 -78px; }
+@keyframes amb-rise { from { opacity: 0; transform: translateY(14px); } }
+.amb-cap-text {
+  margin: 0; font: 560 clamp(18px, 2.2vw, 30px)/1.32 var(--ui); letter-spacing: -0.02em; text-wrap: pretty;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.amb-badge { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--ui); letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 10px; border-radius: 99px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--amb-line); backdrop-filter: blur(10px); }
+
+/* Meta: who, where, when. Small, in a corner of the composition. */
+.amb-meta { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.amb-ava { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.22); }
+.amb-ava-i { display: grid; place-items: center; font: 700 15px var(--ui); color: #fff; }
+.amb-meta-t { display: grid; gap: 2px; min-width: 0; }
+.amb-meta-t b { font: 600 15px/1.2 var(--ui); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amb-meta-t span { font: 400 12.5px/1.2 var(--mono); color: var(--amb-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Text slides: the post, set big. Sizes follow the shorter side too, so a short wide tile (1440x500)
+   keeps the words clear of the clock and the bar. */
+.amb-quote, .amb-article {
+  position: absolute; inset: 0; display: grid; align-content: center; justify-items: start; gap: 28px;
+  padding: clamp(80px, 12vh, 140px) clamp(24px, 9vw, 160px) clamp(130px, 18vh, 180px);
+  animation: amb-rise 1.8s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.amb-kicker { margin: 0; font: 600 12.5px var(--ui); letter-spacing: 0.16em; text-transform: uppercase; color: var(--amb-ink, #f4f1ea); align-self: flex-start; display: inline-block; padding: 5px 10px; border-radius: 99px; background: rgba(3, 4, 8, 0.5); backdrop-filter: blur(10px); }
+.amb-say { margin: 0; max-width: 24ch; font-weight: 680; letter-spacing: -0.045em; text-wrap: balance; overflow-wrap: anywhere; text-shadow: 0 2px 40px rgba(0, 0, 0, 0.35); }
+.amb-say-xl { font-size: clamp(40px, min(7.4vw, 12vh), 112px); line-height: 0.98; max-width: 16ch; }
+.amb-say-l { font-size: clamp(32px, min(5.2vw, 9.5vh), 78px); line-height: 1.03; max-width: 20ch; }
+.amb-say-m { font-size: clamp(26px, min(3.8vw, 7.5vh), 56px); line-height: 1.1; max-width: 26ch; letter-spacing: -0.035em; }
+.amb-say-s { font-size: clamp(21px, min(2.7vw, 6vh), 40px); line-height: 1.2; max-width: 34ch; font-weight: 600; letter-spacing: -0.025em; }
+
+/* Articles: a title card in Literata. */
+.amb-article { gap: 22px; }
+.amb-article.has-pic, .has-pic .amb-article { justify-items: start; }
+.amb-a-title {
+  margin: 0; max-width: 20ch; font-family: 'Literata Variable', Georgia, serif; font-optical-sizing: auto;
+  font-weight: 560; font-size: clamp(36px, min(6vw, 10vh), 92px); line-height: 1.02; letter-spacing: -0.03em; text-wrap: balance;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.4);
+}
+.amb-a-dek {
+  margin: 0; max-width: 54ch; font-family: 'Literata Variable', Georgia, serif; font-size: clamp(17px, 1.7vw, 23px); line-height: 1.55;
+  color: var(--amb-ink-2); text-wrap: pretty;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- chrome */
+
+.amb-clock {
+  position: absolute; z-index: 5; left: clamp(20px, 5vw, 72px); top: max(clamp(20px, 5vh, 52px), env(safe-area-inset-top));
+  display: grid; gap: 4px; pointer-events: none; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
+}
+.amb-clock b { font: 300 clamp(30px, min(4.4vw, 8vh), 64px)/1 var(--ui); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.amb-clock span { font: 500 13px var(--ui); color: var(--amb-ink-2); letter-spacing: 0.02em; }
+/* A soft shade behind the clock so it stays readable over a bright sky or a white page. */
+.amb-clock { isolation: isolate; }
+.amb-clock::before {
+  content: ''; position: absolute; z-index: -1; inset: -90px -140px -70px -120px;
+  background: radial-gradient(closest-side, rgba(3, 4, 8, 0.5), rgba(3, 4, 8, 0.22) 60%, transparent);
+}
+
+.amb-progress { position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255, 255, 255, 0.06); }
+.amb-progress b { display: block; height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #ffc56e, #ff6f91 55%, #a58bff); opacity: 0.8; animation: amb-fill linear both; }
+.amb.paused .amb-progress b { animation-play-state: paused; }
+@keyframes amb-fill { from { transform: scaleX(0); } }
+.amb-paused {
+  position: absolute; z-index: 6; right: clamp(20px, 5vw, 72px); bottom: 22px; display: inline-flex; align-items: center; gap: 6px;
+  font: 500 12px var(--mono); color: var(--amb-ink-2); padding: 5px 10px; border-radius: 99px; background: var(--amb-glass); backdrop-filter: blur(10px);
+}
+
+.amb-top, .amb-bar { transition: opacity 0.5s ease, translate 0.5s ease; }
+.amb:not(.awake) .amb-top, .amb:not(.awake) .amb-bar { opacity: 0; pointer-events: none; }
+.amb:not(.awake) .amb-bar { translate: 0 10px; }
+.amb-top { position: absolute; z-index: 7; right: clamp(16px, 3vw, 40px); top: max(clamp(16px, 3vh, 32px), env(safe-area-inset-top)); display: flex; align-items: center; gap: 8px; }
+.amb-count { font: 500 12.5px var(--mono); color: var(--amb-ink-2); margin-right: 6px; font-variant-numeric: tabular-nums; padding: 5px 10px; border-radius: 99px; background: rgba(3, 4, 8, 0.55); backdrop-filter: blur(10px); }
+
+.amb-bar {
+  position: absolute; z-index: 7; left: 50%; transform: translateX(-50%); bottom: max(28px, calc(env(safe-area-inset-bottom) + 14px));
+  display: flex; align-items: center; gap: 6px; padding: 7px; border-radius: 22px; width: max-content; max-width: calc(100% - 32px); flex-wrap: wrap; justify-content: center;
+  background: var(--amb-glass); border: 1px solid var(--amb-line);
+  backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.amb-group { display: flex; align-items: center; gap: 4px; }
+.amb-group + .amb-group { padding-left: 6px; border-left: 1px solid var(--amb-line); }
+
+.amb-ico {
+  width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px; border: 0; background: transparent; color: inherit; cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.amb-top .amb-ico { background: var(--amb-glass); border: 1px solid var(--amb-line); backdrop-filter: blur(14px); }
+.amb-ico:hover { background: rgba(255, 255, 255, 0.1); }
+.amb-ico:active { transform: scale(0.94); }
+.amb-ico:disabled { opacity: 0.35; cursor: default; }
+.amb-ico:focus-visible, .amb-chip:focus-visible, .amb-seg button:focus-visible, .amb-select select:focus-visible, .amb-btn:focus-visible { outline: 2px solid #ffc56e; outline-offset: 2px; }
+.amb-play { background: #f4f1ea; color: #0a0b10; }
+.amb-play:hover { background: #fff; }
+.amb-next svg { transform: scaleX(-1); }
+
+.amb-seg { gap: 2px; }
+.amb-seg button, .amb-chip {
+  height: 34px; padding: 0 11px; border-radius: 11px; border: 0; background: transparent; color: var(--amb-ink-2);
+  font: 500 13px var(--ui); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s, color 0.15s;
+}
+.amb-seg button { font-family: var(--mono); font-size: 12.5px; padding: 0 9px; }
+.amb-seg button:hover, .amb-chip:hover { color: #fff; background: rgba(255, 255, 255, 0.07); }
+.amb-seg button.on, .amb-chip.on { color: #0a0b10; background: linear-gradient(120deg, #ffd08a, #ff9aa8); }
+
+.amb-select select {
+  height: 34px; max-width: 170px; padding: 0 28px 0 11px; border-radius: 11px; border: 1px solid var(--amb-line);
+  background: rgba(255, 255, 255, 0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ddd' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: #f4f1ea; font: 500 13px var(--ui); appearance: none; -webkit-appearance: none; cursor: pointer; text-overflow: ellipsis;
+}
+.amb-select option { background: #14151c; color: #f4f1ea; }
+
+.amb-empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; gap: 14px; padding: 24px; }
+.amb-empty h2 { margin: 0; font: 680 clamp(28px, 4vw, 48px)/1.05 var(--ui); letter-spacing: -0.04em; }
+.amb-empty p { margin: 0; color: var(--amb-ink-2); max-width: 40ch; }
+.amb-empty-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+.amb-btn { height: 40px; padding: 0 16px; border-radius: 12px; border: 0; font: 600 14px var(--ui); background: linear-gradient(120deg, #ffd08a, #ff8fa3); color: #0a0b10; cursor: pointer; }
+.amb-btn.ghost { background: rgba(255, 255, 255, 0.08); color: #f4f1ea; border: 1px solid var(--amb-line); }
+
+/* Phones: the bar becomes two compact rows, the clock shrinks. */
+@media (max-width: 640px) {
+  .amb-bar {
+    left: 12px; right: 12px; transform: none; width: auto; max-width: none; padding: 8px; border-radius: 20px;
+    bottom: max(14px, calc(env(safe-area-inset-bottom) + 8px));
+    display: grid; grid-template-columns: auto auto; justify-content: space-between; row-gap: 8px; column-gap: 6px;
+    grid-template-areas: "play act" "pace chips" "pick pick";
+  }
+  .amb-group + .amb-group { padding-left: 0; border-left: 0; }
+  .amb-g-play { grid-area: play; } .amb-g-act { grid-area: act; } .amb-g-pace { grid-area: pace; }
+  .amb-g-chips { grid-area: chips; justify-content: end; } .amb-g-pick { grid-area: pick; }
+  .amb-g-pick .amb-select { flex: 1; min-width: 0; }
+  .amb-select select { max-width: none; width: 100%; }
+  .amb-ico { width: 38px; height: 38px; }
+  .amb-caption { bottom: 40px; }
+  .amb.awake .amb-caption { translate: 0 -150px; }
+  .amb-quote, .amb-article { padding-bottom: 190px; }
+  .amb-frame.contain { padding-bottom: 210px; }
+  html.ambient-on .toasts { bottom: 170px; }
+}
+
+/* Short windows: room for the clock above and the bar below. */
+@media (max-height: 620px) and (min-width: 641px) {
+  .amb-quote, .amb-article { padding-top: 104px; padding-bottom: 104px; gap: 16px; }
+}
+
+/* Reduced motion: crossfades only. */
+@media (prefers-reduced-motion: reduce) {
+  .amb, .amb-caption, .amb-quote, .amb-article { animation: none; }
+  .amb-slide.in { animation-duration: 0.9s; }
+  .amb-slide.out { animation-duration: 0.9s; }
+  .amb-pic.kb, .amb-sky-img, .amb-sky span { animation: none; }
+  .amb-top, .amb-bar { transition: opacity 0.2s; }
+  .amb:not(.awake) .amb-bar { translate: none; }
+}

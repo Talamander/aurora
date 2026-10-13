@@ -1,0 +1,3 @@
+id,created_at,full_text,media,screen_name,name,profile_image_url,user_id,in_reply_to,retweeted_status,quoted_status,favorite_count,retweet_count,url
+1840000000000000005,2024-09-01 10:00:00 +00:00,"Line one
+line two, with ""quotes""","[{""type"":""photo"",""url"":""https://t.co/m"",""thumbnail"":""https://pbs.twimg.com/media/z?name=thumb"",""original"":""https://pbs.twimg.com/media/z?name=orig""}]",csvuser,CSV User,,9,,,,1,0,https://x.com/csvuser/status/1840000000000000005

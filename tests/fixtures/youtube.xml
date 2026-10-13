@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?channel_id=UCabc"/>
+ <id>yt:channel:UCabc</id>
+ <yt:channelId>UCabc</yt:channelId>
+ <title>Example Channel</title>
+ <link rel="alternate" href="https://www.youtube.com/channel/UCabc"/>
+ <author><name>Example Channel</name><uri>https://www.youtube.com/channel/UCabc</uri></author>
+ <published>2015-01-01T00:00:00+00:00</published>
+ <entry>
+  <id>yt:video:vid123</id>
+  <yt:videoId>vid123</yt:videoId>
+  <yt:channelId>UCabc</yt:channelId>
+  <title>How to test feeds</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=vid123"/>
+  <author><name>Example Channel</name><uri>https://www.youtube.com/channel/UCabc</uri></author>
+  <published>2024-08-01T15:00:00+00:00</published>
+  <updated>2024-08-02T15:00:00+00:00</updated>
+  <media:group>
+   <media:title>How to test feeds</media:title>
+   <media:content url="https://www.youtube.com/v/vid123?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i1.ytimg.com/vi/vid123/hqdefault.jpg" width="480" height="360"/>
+   <media:description>A video about testing. See https://example.com/notes</media:description>
+   <media:community><media:statistics views="1000"/></media:community>
+  </media:group>
+ </entry>
+</feed>

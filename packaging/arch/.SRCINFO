@@ -1,0 +1,31 @@
+pkgbase = aurora-reader
+	pkgdesc = Private, agentic social feed reader that runs on your own computer
+	pkgver = 0.1.0
+	pkgrel = 1
+	install = aurora-reader.install
+	arch = x86_64
+	arch = aarch64
+	license = LicenseRef-unlicensed
+	makedepends = git
+	makedepends = npm
+	depends = nodejs>=24
+	optdepends = chromium: signed-in connectors, the in-app sign-in browser and connector building
+	optdepends = bubblewrap: sandbox for AI-built connectors (strongly recommended)
+	optdepends = python: connectors written in Python
+	optdepends = uv: Python connector dependencies
+	optdepends = yt-dlp: keep local copies of videos in saved posts
+	optdepends = walker: pick a post from the launcher with aurora pick (or fuzzel, wofi, rofi, fzf)
+	options = !strip
+	options = !debug
+	source = aurora::git+file:///path/to/aurora
+	source = aurora-server.sh
+	source = aurora.sh
+	source = aurora.service
+	source = aurora-terminal.desktop
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = aurora-reader

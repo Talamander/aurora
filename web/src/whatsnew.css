@@ -1,0 +1,30 @@
+/* What's new: a sheet with the app's aurora drawn across its head. */
+.sheet.whatsnew { width: min(480px, 100%); position: relative; overflow: hidden; }
+.whatsnew .sheet-head { position: relative; border-bottom: 0; padding-top: 28px; padding-bottom: 8px; }
+.wn-sky { position: absolute; inset: 0 0 auto 0; height: 150px; pointer-events: none; overflow: hidden; }
+.wn-sky span { position: absolute; width: 70%; height: 120px; border-radius: 50%; filter: blur(38px); opacity: 0.42; mix-blend-mode: normal; }
+.wn-sky span:nth-child(1) { left: -10%; top: -50px; background: #f08a24; animation: wn-drift 14s ease-in-out infinite alternate; }
+.wn-sky span:nth-child(2) { left: 25%; top: -70px; background: #e8467c; animation: wn-drift 17s ease-in-out -4s infinite alternate-reverse; }
+.wn-sky span:nth-child(3) { left: 55%; top: -40px; background: #6d5cf0; animation: wn-drift 12s ease-in-out -7s infinite alternate; }
+.wn-sky::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 30%, var(--surface)); }
+@keyframes wn-drift { to { transform: translateX(14%) scaleY(1.2); } }
+.wn-kicker { margin: 0 0 4px; font: 650 11.5px/1 var(--ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); }
+.whatsnew .sheet-head > div { flex: 1; }
+.whatsnew .sheet-head h2 { font-size: 30px; letter-spacing: -0.045em; }
+.wn-list { list-style: none; margin: 0; padding: 4px 16px 16px; flex: 1; overflow-y: auto; scrollbar-width: thin; position: relative; }
+.wn-item { display: grid; grid-template-columns: 36px 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 8px; border-radius: 14px; }
+.wn-item + .wn-item { box-shadow: 0 -1px 0 var(--line); }
+.wn-item:hover { background: var(--sel); }
+.wn-icon { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: var(--lit-soft); color: var(--on-lit); align-self: start; }
+.wn-text h3 { margin: 0 0 2px; font: 620 15px/1.25 var(--ui); letter-spacing: -0.01em; }
+.wn-text p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.wn-go { white-space: nowrap; font-size: 12.5px; min-height: 32px; }
+.wn-foot { display: flex; justify-content: flex-end; padding: 12px 24px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); position: relative; }
+.wn-foot .btn.primary { min-width: 140px; }
+@media (max-width: 520px) {
+  .wn-item { grid-template-columns: 36px 1fr; }
+  .wn-go { grid-column: 2; justify-self: start; margin: 2px 0 0 -10px; }
+}
+@media (prefers-reduced-motion: reduce) { .wn-sky span { animation: none; } }
+.wn-more { margin: 18px 8px 4px; font: 650 11.5px/1 var(--ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.wn-more + .wn-item { box-shadow: none; }

@@ -1,0 +1,97 @@
+# Aurora: your private, agentic social feed, packaged for Arch Linux and Omarchy.
+#
+# Build from a checkout (nothing is downloaded except npm packages pinned in package-lock.json):
+#   cd packaging/arch && makepkg -si
+# makepkg clones the committed HEAD of this repository, so uncommitted changes and the local
+# data/ folder are never packaged. Point AURORA_REPO at another checkout or a git URL to build
+# that instead. Before publishing anywhere (the AUR, a repo), replace the source with a public
+# URL and a tagged release, and pick a license.
+
+pkgname=aurora-reader
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Private, agentic social feed reader that runs on your own computer'
+# The Claude Agent SDK ships a native binary per platform in node_modules, so the package is
+# built per architecture even though Aurora itself is TypeScript.
+arch=('x86_64' 'aarch64')
+# url= is left out until there is a public home page.
+# Placeholder: no license has been chosen yet. Set an SPDX identifier and install the file.
+license=('LicenseRef-unlicensed')
+depends=('nodejs>=24')
+makedepends=('git' 'npm')
+optdepends=(
+  'chromium: signed-in connectors, the in-app sign-in browser and connector building'
+  'bubblewrap: sandbox for AI-built connectors (strongly recommended)'
+  'python: connectors written in Python'
+  'uv: Python connector dependencies'
+  'yt-dlp: keep local copies of videos in saved posts'
+  'walker: pick a post from the launcher with aurora pick (or fuzzel, wofi, rofi, fzf)'
+)
+install=aurora-reader.install
+options=('!strip' '!debug')
+_repo="${AURORA_REPO:-$(cd "${startdir:-.}/../.." 2>/dev/null && pwd)}"
+case "$_repo" in *://*) ;; *) _repo="git+file://$_repo" ;; esac
+source=("aurora::$_repo"
+        'aurora-server.sh'
+        'aurora.sh'
+        'aurora.service'
+        'aurora-terminal.desktop')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+pkgver() {
+  cd aurora
+  local base
+  base=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' package.json | head -n1)
+  printf '%s.r%s.%s' "${base:-0.1.0}" "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+build() {
+  cd aurora
+  export npm_config_cache="$srcdir/npm-cache"
+  # Install scripts stay off: neither the web build nor the server needs one.
+  npm ci --no-audit --no-fund --ignore-scripts --prefer-offline
+  npm run build
+  # Production dependencies only, as desktop/scripts/stage.mjs does for the desktop app.
+  rm -rf node_modules
+  npm ci --omit=dev --no-audit --no-fund --ignore-scripts --prefer-offline
+  # Bundled into web/dist by Vite; the server never imports them.
+  rm -rf node_modules/{react,react-dom,scheduler,loose-envify,js-tokens,hls.js,@fontsource-variable}
+}
+
+check() {
+  cd aurora
+  test -f web/dist/index.html
+  node -e "import('./server/safeFetch.ts').then(() => process.exit(0), (e) => { console.error(e); process.exit(1) })"
+}
+
+package() {
+  cd aurora
+  local lib="$pkgdir/usr/lib/aurora"
+  install -d "$lib/web"
+  cp -a core server cli node_modules package.json package-lock.json "$lib/"
+  cp -a web/dist "$lib/web/dist"
+  find "$lib/core" "$lib/server" "$lib/cli" -name '*.test.ts' -delete
+
+  install -Dm755 "$srcdir/aurora-server.sh" "$pkgdir/usr/bin/aurora-server"
+  install -Dm755 "$srcdir/aurora.sh" "$pkgdir/usr/bin/aurora"
+  install -Dm644 "$srcdir/aurora.service" "$pkgdir/usr/lib/systemd/user/aurora.service"
+
+  install -Dm644 integrations/omarchy/aurora.desktop "$pkgdir/usr/share/applications/aurora.desktop"
+  install -Dm644 "$srcdir/aurora-terminal.desktop" "$pkgdir/usr/share/applications/aurora-terminal.desktop"
+  install -Dm644 web/public/icon.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/aurora.svg"
+  local s
+  for s in 16 24 32 48 64 128 256 512; do
+    install -Dm644 "desktop/assets/${s}x${s}.png" "$pkgdir/usr/share/icons/hicolor/${s}x${s}/apps/aurora.png"
+  done
+
+  # Omarchy extras to copy yourself (Waybar module, Hyprland bindings); nothing is installed into ~.
+  install -d "$pkgdir/usr/share/aurora/omarchy"
+  cp -a integrations/omarchy/waybar-module.jsonc integrations/omarchy/waybar.css integrations/omarchy/bindings.lua "$pkgdir/usr/share/aurora/omarchy/"
+
+  install -d "$pkgdir/usr/share/doc/$pkgname"
+  cp -a README.md docs/*.md "$pkgdir/usr/share/doc/$pkgname/"
+}

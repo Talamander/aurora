@@ -1,0 +1,5 @@
+{ "items": [
+  { "url": "https://news.example.com/a", "title": "Headline A", "text": "Body <b>bold</b>", "author": "Reporter", "date": "2024-05-01T00:00:00Z" },
+  { "link": "https://bsky.app/profile/alice.bsky.social/post/3kxyz", "content": "A skeet", "author": { "name": "Alice", "handle": "@alice.bsky.social" }, "published": 1714521600 },
+  { "title": "no url" }
+] }

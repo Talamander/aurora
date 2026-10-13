@@ -1,0 +1,131 @@
+/* Owner lock: the lock screen (always the night sky, whatever the theme) and Settings > Lock. */
+.lk {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+  color: #eef0f6;
+  color-scheme: dark;
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 72% 12%, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(1.5px 1.5px at 84% 38%, rgba(255, 255, 255, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 30% 64%, rgba(255, 255, 255, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 58% 82%, rgba(255, 255, 255, 0.45), transparent 60%),
+    radial-gradient(1.5px 1.5px at 44% 30%, rgba(255, 255, 255, 0.5), transparent 60%),
+    radial-gradient(120% 90% at 50% 112%, #22123d 0%, #0d0b1c 52%, #05060a 100%);
+  overflow: hidden;
+  font-family: inherit;
+}
+.lk-boot { background: radial-gradient(120% 90% at 50% 112%, #22123d 0%, #0d0b1c 52%, #05060a 100%); }
+.lk-sky { position: absolute; inset: -20%; pointer-events: none; filter: blur(60px) saturate(1.3); opacity: 0.75; }
+.lk-sky i { position: absolute; border-radius: 50%; mix-blend-mode: screen; animation: lk-drift 22s ease-in-out infinite alternate; }
+.lk-sky i:nth-child(1) { width: 60vmax; height: 22vmax; left: 8%; top: 18%; background: radial-gradient(closest-side, rgba(255, 122, 156, 0.55), transparent); transform: rotate(-14deg); }
+.lk-sky i:nth-child(2) { width: 56vmax; height: 18vmax; right: 2%; top: 30%; background: radial-gradient(closest-side, rgba(166, 155, 255, 0.55), transparent); transform: rotate(10deg); animation-duration: 28s; animation-delay: -6s; }
+.lk-sky i:nth-child(3) { width: 48vmax; height: 16vmax; left: 26%; top: 6%; background: radial-gradient(closest-side, rgba(255, 197, 107, 0.4), transparent); transform: rotate(-4deg); animation-duration: 34s; animation-delay: -12s; }
+@keyframes lk-drift {
+  from { translate: -4% 0; scale: 1; }
+  to { translate: 5% 3%; scale: 1.12; }
+}
+@media (prefers-reduced-motion: reduce) { .lk-sky i { animation: none; } }
+
+.lk-card {
+  position: relative;
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 34px 28px 26px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(22, 20, 40, 0.72), rgba(10, 10, 20, 0.66));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  text-align: center;
+  animation: lk-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes lk-rise { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+.lk-mark { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 50px -12px rgba(255, 122, 156, 0.55), 0 0 80px -10px rgba(166, 155, 255, 0.45); }
+.lk h1, .lk h2 { margin: 6px 0 0; font-size: 24px; font-weight: 680; letter-spacing: -0.02em; }
+.lk-sub { margin: 0; color: rgba(238, 240, 246, 0.7); font-size: 14px; line-height: 1.5; max-width: 32ch; }
+.lk-form, .lk-reveal { display: flex; flex-direction: column; align-items: stretch; gap: 12px; width: 100%; }
+.lk-reveal { align-items: center; }
+.lk-field { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; }
+.lk-field span { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: rgba(238, 240, 246, 0.55); }
+.lk-field input {
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font: 500 15px/1 var(--mono);
+  letter-spacing: 0.06em;
+  outline: none;
+  width: 100%;
+}
+.lk-field input:focus { border-color: rgba(255, 197, 107, 0.75) !important; box-shadow: 0 0 0 3px rgba(255, 197, 107, 0.2); }
+.lk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 48px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font-weight: 650;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+.lk-btn.primary { border: 0; color: #1d0d06; background: linear-gradient(100deg, #ffc56b, #ff7a9c 55%, #a69bff); box-shadow: 0 14px 34px -14px rgba(255, 122, 156, 0.8); }
+.lk-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
+.lk-btn:active:not(:disabled) { transform: translateY(0); }
+.lk-btn:disabled { opacity: 0.45; cursor: default; }
+.lk-btn:focus-visible, .lk-link:focus-visible { outline: 2px solid #ffc56b; outline-offset: 3px; }
+.lk-row { display: flex; gap: 8px; width: 100%; }
+.lk-link { background: none; border: 0; color: rgba(238, 240, 246, 0.72); font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 4px; }
+.lk-link:hover:not(:disabled) { color: #fff; }
+.lk-link:disabled { opacity: 0.4; cursor: default; }
+.lk-hint { margin: 0; font-size: 12.5px; color: rgba(255, 210, 160, 0.85); line-height: 1.45; }
+.lk-err { margin: 0; font-size: 13px; color: #ff9d8a; }
+.lk-foot { position: relative; margin: 0; font-size: 12px; color: rgba(238, 240, 246, 0.42); text-align: center; }
+.lk-code {
+  display: block;
+  width: 100%;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px dashed rgba(255, 197, 107, 0.45);
+  color: #ffe2b0;
+  font: 600 15px/1.6 var(--mono);
+  letter-spacing: 0.08em;
+  word-break: break-word;
+  text-align: center;
+  user-select: all;
+}
+.lk-check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: rgba(238, 240, 246, 0.8); cursor: pointer; }
+
+/* Settings > Lock */
+.lk-set .lk-h4 { margin: 14px 0 4px; font: 500 11px/1 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); }
+.lk-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.lk-list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+.lk-list li:last-child { border-bottom: 0; }
+.lk-li-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lk-li-name { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lk-li-meta { font-size: 12px; color: var(--ink-3); overflow-wrap: anywhere; }
+.lk-tag { color: var(--lamp-ink); border-color: color-mix(in srgb, var(--lamp) 40%, transparent); }
+.lk-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.lk-inline { margin: 10px 0; padding: 20px; border-radius: 20px; color: #eef0f6; background: radial-gradient(120% 120% at 50% 120%, #22123d, #0d0b1c 60%, #05060a); }
+.lk-inline .lk-sub { max-width: none; }
+.lk-inline .lk-btn { max-width: 320px; }

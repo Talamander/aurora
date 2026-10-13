@@ -1,0 +1,125 @@
+/* Columns: tiled views with gaps and thin borders, the focused one ringed in the accent. */
+.app.columns-on { grid-template-columns: 232px minmax(0, 1fr); }
+@media (min-width: 861px) and (max-width: 1240px) {
+  .app.columns-on { grid-template-columns: 210px minmax(0, 1fr); }
+}
+
+.columns {
+  min-height: 0; min-width: 0;
+  display: flex; flex-direction: column;
+  background: var(--pool), var(--ground);
+}
+.columns:focus { outline: none; }
+.columns-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 14px 10px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.app.desktop .columns-bar { -webkit-app-region: drag; }
+.app.desktop .columns-bar :is(button, a, select) { -webkit-app-region: no-drag; }
+.columns-title { margin: 0; font: 650 19px/1.1 var(--ui); letter-spacing: -0.035em; display: flex; align-items: baseline; gap: 8px; }
+.columns-n { font: 500 12px/1 var(--mono); color: var(--ink-2); }
+.columns-hint { flex: 1; margin: 0; font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.columns-hint kbd { padding: 2px 5px; }
+
+.columns-row {
+  flex: 1; min-height: 0;
+  display: flex; gap: 10px;
+  padding: 10px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.col {
+  --col-pc: var(--ink-3);
+  flex: 1 1 0; min-width: min(330px, 100%); max-width: 760px;
+  display: flex; flex-direction: column; min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  scroll-snap-align: start;
+  position: relative;
+  transition: border-color 140ms ease, box-shadow 160ms ease, opacity 140ms ease;
+}
+.col.wide { flex-grow: 2; min-width: 480px; max-width: 1200px; }
+.col.focused {
+  border-color: var(--lamp);
+  box-shadow: 0 0 0 1px var(--lamp), 0 10px 30px -18px color-mix(in srgb, var(--lamp) 60%, transparent);
+}
+.col.dragging { opacity: 0.55; }
+.col.drop-before::before, .col.drop-after::after {
+  content: ''; position: absolute; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--lamp);
+}
+.col.drop-before::before { left: -7px; }
+.col.drop-after::after { right: -7px; }
+
+.col-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 6px 8px 10px;
+  border-bottom: 1px solid var(--line);
+  cursor: grab;
+  user-select: none;
+}
+.col-head:active { cursor: grabbing; }
+.col-grip {
+  width: 6px; height: 18px; flex: none; opacity: 0.55;
+  background-image: radial-gradient(circle, var(--ink-3) 1.1px, transparent 1.3px);
+  background-size: 6px 6px;
+}
+.col-titles { flex: 1; min-width: 0; }
+.col-name { margin: 0; font: 640 14.5px/1.2 var(--ui); letter-spacing: -0.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.col-sub { margin: 2px 0 0; font: 500 11.5px/1.2 var(--mono); color: var(--ink-2); display: flex; gap: 8px; white-space: nowrap; overflow: hidden; }
+.col-prof { display: inline-flex; align-items: center; gap: 5px; }
+.col-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--col-pc); }
+.col-tools { display: flex; gap: 0; flex: none; opacity: 0.7; transition: opacity 140ms; }
+.col:hover .col-tools, .col.focused .col-tools, .col-tools:focus-within { opacity: 1; }
+.col-tools .col-right svg { transform: scaleX(-1); }
+.col-tools .icon-btn.on { color: var(--lamp-ink); background: var(--lamp-wash); }
+.col-tools .icon-btn:disabled { opacity: 0.35; cursor: default; }
+
+.col-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding: 8px; scroll-padding: 8px; }
+.col-scroll:focus { outline: none; }
+.col-scroll:focus-visible { outline: 2px solid var(--lamp); outline-offset: -2px; border-radius: 0 0 12px 12px; }
+.col-posts { display: flex; flex-direction: column; gap: 8px; }
+.col .post { border-radius: 12px; padding: 12px 12px 6px; scroll-margin: 8px; }
+.col .post-src-label { max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-more { height: 40px; }
+.col-end { margin: 8px 0 4px; text-align: center; font: 500 11.5px/1 var(--mono); color: var(--ink-2); }
+.col-empty { padding: 28px 16px; text-align: center; color: var(--ink-2); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.col-empty p { margin: 0; }
+.col-empty-title { font: 600 15px var(--ui); color: var(--ink); }
+
+.col-add { padding: 14px; gap: 12px; flex: 0 0 264px; min-width: 264px; border-style: dashed; justify-content: flex-start; overflow-y: auto; }
+.col-field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; color: var(--ink-2); font-weight: 600; }
+.col-field select, .col-field input {
+  height: 36px; padding: 0 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--raised); color: var(--ink);
+  font: 500 13.5px var(--ui);
+}
+.col-add-actions { display: flex; gap: 6px; }
+.col-add-hint { margin: 0; font-size: 12px; line-height: 1.5; color: var(--ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .col { transition: none; }
+}
+
+/* Narrow columns drop the handle so names and sources keep their room. */
+.col-scroll { container-type: inline-size; }
+@container (max-width: 460px) {
+  .post-handle { display: none; }
+}
+/* The same post can sit in two columns; only the focused column shows it selected. */
+.col:not(.focused) .post.sel { border-color: var(--line); box-shadow: none; }
+
+/* Post actions keep full-size targets in a narrow column; the "why" chip gives way instead. */
+.col .post-actions .pa { flex: none; width: 34px; }
+.col .lit { flex: 0 1 auto; }
+.col .lit b { color: color-mix(in srgb, var(--glow-ink) 70%, var(--ink)); }
+@container (max-width: 460px) {
+  .lit .lit-extra { display: none; }
+}
+
+/* Opening the add form should not push the last column off screen on a laptop-width window:
+   columns give up some width while it is open. */
+.columns-row:has(.col-add) .col:not(.wide) { min-width: 272px; }

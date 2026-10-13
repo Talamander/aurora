@@ -1,0 +1,19 @@
+# systemd user unit: keeps the Aurora server running in the background, bound to 127.0.0.1.
+# Install:  cp aurora.service ~/.config/systemd/user/ && systemctl --user enable --now aurora
+# Edit WorkingDirectory to where you cloned Aurora.
+[Unit]
+Description=Aurora, your private agentic social feed
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/Projects/social-reader
+ExecStart=/usr/bin/env node server/main.ts
+Environment=PORT=4317
+Restart=on-failure
+RestartSec=5
+# The server needs nothing beyond its own folder and the network.
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

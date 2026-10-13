@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">
+  <title type="text">Atom Example</title>
+  <link rel="self" href="https://atom.example.net/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://atom.example.net/"/>
+  <updated>2024-09-01T00:00:00Z</updated>
+  <entry>
+    <title type="html">Entry &amp;amp; one</title>
+    <id>tag:atom.example.net,2024:1</id>
+    <link rel="replies" href="https://atom.example.net/1#comments"/>
+    <link rel="alternate" type="text/html" href="https://atom.example.net/1"/>
+    <author><name>Pierre</name><uri>https://atom.example.net/pierre</uri></author>
+    <published>2024-09-01T12:00:00Z</published>
+    <updated>2024-09-02T12:00:00Z</updated>
+    <content type="html">&lt;p&gt;Bonjour &lt;a href="https://link.example.org/x"&gt;lien&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Entry two</title>
+    <id>tag:atom.example.net,2024:2</id>
+    <link href="https://atom.example.net/2"/>
+    <updated>2024-09-03T12:00:00Z</updated>
+    <summary>Plain summary</summary>
+  </entry>
+</feed>
