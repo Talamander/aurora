@@ -174,12 +174,13 @@ export function App() {
   const [agentOpen, setAgentOpen] = useState(false);
   const [relatedId, setRelatedId] = useState<string | null>(null);
   const [login, setLogin] = useState<{ profile: string; url: string; label?: string; fromAgent?: boolean } | null>(null);
-  const [draft, setDraft] = useState<{ text: string; send?: boolean; n: number } | null>(null);
+  const [draft, setDraft] = useState<{ text: string; send?: boolean; fresh?: boolean; n: number } | null>(null);
   const agent = useAgentStatus(r);
   const [person, setPerson] = usePersonOpener();
-  const ask = useCallback((text: string, send = true) => {
+  // fresh: start a new conversation instead of adding to the open one (each follow request is its own chat).
+  const ask = useCallback((text: string, send = true, fresh = false) => {
     setAgentOpen(true);
-    setDraft({ text, send, n: Date.now() });
+    setDraft({ text, send, fresh, n: Date.now() });
   }, []);
 
   // Share to follow: the PWA share target (?share-url / share-text / share-title) and plain
@@ -193,7 +194,7 @@ export function App() {
     for (const k of keys) q.delete(k);
     const rest = q.toString();
     window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash);
-    if (target.trim()) ask(`Follow this: ${target.trim().slice(0, 2000)}`, false);
+    if (target.trim()) ask(`Follow this: ${target.trim().slice(0, 2000)}`, false, true);
   }, [ask]);
 
   // Desktop shell commands: the global palette shortcut, aurora:// follow links and the
@@ -206,7 +207,7 @@ export function App() {
     if (!desk) return;
     desk.onCommand((cmd, arg) => {
       if (cmd === 'palette') setPanel('palette');
-      else if (cmd === 'follow' && arg) shellRef.current.ask(`Follow this: ${arg.slice(0, 2000)}`, false);
+      else if (cmd === 'follow' && arg) shellRef.current.ask(`Follow this: ${arg.slice(0, 2000)}`, false, true);
       else if (cmd === 'ask' && arg) shellRef.current.ask(arg.slice(0, 2000));
       else if (cmd === 'page' && arg) shellRef.current.setPageId(arg);
       else if (cmd === 'post' && arg) shellRef.current.openPostId(arg);
@@ -1025,7 +1026,7 @@ function Feed({
   searchRef: React.RefObject<HTMLInputElement>; phone: boolean; density: string; setDensity: (d: 'comfortable' | 'compact') => void;
   expanded: ReadonlySet<string>; toggleExpand: (id: string) => void; whyId: string | null; setWhyId: (id: string | null) => void;
   select: (id: string, scroll?: boolean) => void; act: (k: Act, i: Item) => void; markRead: (ids: string[]) => void;
-  ask: (text: string, send?: boolean) => void; openAgent: () => void; openPost: (it: Item) => void;
+  ask: (text: string, send?: boolean, fresh?: boolean) => void; openAgent: () => void; openPost: (it: Item) => void;
   catchUp: { since: string | null; markSeen: () => void; newOnly: boolean; setNewOnly: (on: boolean) => void };
   editProfile: () => void;
 }) {
@@ -1767,7 +1768,7 @@ const FIRST_EXAMPLES = [
   { label: 'Blog', text: 'simonwillison.net', color: '#4fe0c6' },
 ];
 
-function FirstRun({ r, openPanel, ask }: { r: Reader; openPanel: (p: Panel) => void; ask: (text: string, send?: boolean) => void }) {
+function FirstRun({ r, openPanel, ask }: { r: Reader; openPanel: (p: Panel) => void; ask: (text: string, send?: boolean, fresh?: boolean) => void }) {
   const [busy, setBusy] = useState(false);
   const [v, setV] = useState('');
   return (
@@ -1778,7 +1779,7 @@ function FirstRun({ r, openPanel, ask }: { r: Reader; openPanel: (p: Panel) => v
         <h1 className="first-title">Your feeds, <span className="first-lit">on your terms.</span></h1>
         <p className="first-sub">Tell Aurora who you follow, anywhere. The AI builds a connector for each one on this computer, then reads the noise so you don't have to.</p>
       </div>
-      <form className="first-ask" onSubmit={(e) => { e.preventDefault(); if (v.trim()) { ask(`Follow these: ${v.trim()}`); setV(''); } }}>
+      <form className="first-ask" onSubmit={(e) => { e.preventDefault(); if (v.trim()) { ask(`Follow these: ${v.trim()}`, true, true); setV(''); } }}>
         <span className="agent-orb" aria-hidden />
         <textarea value={v} onChange={(e) => setV(e.target.value)} rows={2} placeholder="MKBHD on YouTube, @natgeo on Instagram, r/LocalLLaMA, a Substack…" aria-label="What to follow" onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); (e.currentTarget.form as HTMLFormElement).requestSubmit(); } }} />
         <button className="btn primary" type="submit" disabled={!v.trim()}>Follow</button>

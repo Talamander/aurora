@@ -48,7 +48,7 @@ export function AgentPanel({
   r, close, status, context, onOpenPost, openWorkshop, openSettings, draft, setDraft, phone,
 }: {
   r: Reader; close: () => void; status: AgentStatus | null; context: () => unknown; onOpenPost: (it: Item) => void;
-  openWorkshop: () => void; openSettings: () => void; draft: { text: string; send?: boolean; n: number } | null; setDraft: (d: null) => void; phone: boolean;
+  openWorkshop: () => void; openSettings: () => void; draft: { text: string; send?: boolean; fresh?: boolean; n: number } | null; setDraft: (d: null) => void; phone: boolean;
 }) {
   const [threadId, setThreadId] = useState<string | null>(() => {
     try {
@@ -151,12 +151,12 @@ export function AgentPanel({
   }, [events, stream, jobs]);
 
   const send = useCallback(
-    async (raw: string) => {
+    async (raw: string, fresh = false) => {
       const msg = raw.trim();
       if (!msg || sending) return;
       setSending(true);
       try {
-        let id = threadId;
+        let id = fresh ? null : threadId;
         if (!id) {
           const t = await api.newThread();
           id = t.id;
@@ -179,7 +179,11 @@ export function AgentPanel({
   // A draft handed over from the dock or the first-run box.
   useEffect(() => {
     if (!draft) return;
-    if (draft.send) void send(draft.text);
+    if (draft.fresh) {
+      remember(null);
+      setHistory(null);
+    }
+    if (draft.send) void send(draft.text, draft.fresh);
     else {
       setText(draft.text);
       setTimeout(() => {

@@ -2,6 +2,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { z } from 'zod';
 import { safeFetch } from '../safeFetch.ts';
 import { libraryChanged } from '../events.ts';
@@ -9,6 +10,7 @@ import { chatTools, untrusted } from './tools.ts';
 import { rawToDraft } from '../actors/map.ts';
 import { toIso } from '../connectors/util.ts';
 import { profileRoot } from '../actors/browser.ts';
+import { profileSites } from '../login.ts';
 import { NEEDS_SANDBOX } from '../actors/sandbox.ts';
 import type { ToolDef, ToolOut } from './types.ts';
 
@@ -140,7 +142,16 @@ export const builderTools: ToolDef[] = [
     run: (_a, ctx) => {
       const root = profileRoot(ctx.app.dataDir);
       const names = existsSync(root) ? readdirSync(root, { withFileTypes: true }).filter((d) => d.isDirectory() && !d.name.startsWith('.')).map((d) => d.name) : [];
-      return ok(names.length ? `Signed-in profiles: ${names.join(', ')}. (A profile exists once the user opened its login window; a login wall in a test means they did not finish signing in.)` : 'No signed-in profiles yet.');
+      if (!names.length) return ok('No signed-in profiles yet.');
+      // A profile exists as soon as its login window opened; the cookie names say whether the sign-in finished.
+      const lines = names.map((n) => {
+        const sites = profileSites(join(root, n));
+        if (sites === null) return `${n}: open right now (a login window or a sync is using it), status unknown`;
+        const yes = sites.filter((x) => x.signedIn === true).map((x) => x.site);
+        const no = sites.filter((x) => x.signedIn === false).map((x) => x.site);
+        return `${n}: ${yes.length ? `signed in to ${yes.join(', ')}` : 'not signed in to any known site'}${no.length ? `; NOT signed in to ${no.join(', ')}` : ''}`;
+      });
+      return ok(`Browser profiles:\n${lines.join('\n')}\nA session-tier source only works where the profile is signed in to that site. If it is not, call request_login and wait.`);
     },
   },
   {
