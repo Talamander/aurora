@@ -5,7 +5,10 @@
 //   page is streamed to the web UI as JPEG frames (CDP Page.startScreencast over SSE), and the
 //   user's mouse, keyboard, scroll and paste come back as POSTs and are replayed with Playwright's
 //   input API.
-// - window (desktop only: macOS, Windows, or Linux with DISPLAY or WAYLAND_DISPLAY set): a normal headful Chromium window.
+// - window (desktop only: macOS, Windows, or Linux with DISPLAY or WAYLAND_DISPLAY set): a plain
+//   Chromium process on the app's profile, with no automation attached. The user drives it like any
+//   browser. Sites such as X and Google refuse to sign in inside a headless or automated browser
+//   ("An unexpected error occurred"), so this is the default wherever there is a display.
 //
 // Lines held here: only app-owned profiles are touched; cookie values, typed text and URL query
 // strings are never logged or returned (the profile list reads cookie host and name columns only);
@@ -13,12 +16,14 @@
 // in cloud mode (SR_CLOUD=1) Meta and X profiles and hosts are refused.
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { BrowserContext, CDPSession, Page } from 'playwright-core';
 import {
+  LAUNCH_ARGS,
   PROFILE_RE,
   acquireProfile,
   assertCloudAllowed,
@@ -77,7 +82,10 @@ interface Session {
   id: string;
   profile: string;
   mode: LoginMode;
-  ctx: BrowserContext;
+  /** Screencast mode: the Playwright context. Window mode: null. */
+  ctx: BrowserContext | null;
+  /** Window mode: the plain Chromium process. */
+  proc: ChildProcess | null;
   page: Page | null;
   cdp: CDPSession | null;
   viewport: { width: number; height: number };
@@ -160,6 +168,19 @@ export function siteOf(hostKey: string): string {
   return parts.slice(-2).join('.');
 }
 
+/** Asks Chromium to quit (it saves its cookie store on SIGTERM), then forces it after 10 s. */
+function stopProcess(proc: ChildProcess): Promise<void> {
+  if (proc.exitCode !== null || proc.signalCode !== null) return Promise.resolve();
+  return new Promise((resolve) => {
+    const force = setTimeout(() => proc.kill('SIGKILL'), 10_000);
+    proc.once('exit', () => {
+      clearTimeout(force);
+      resolve();
+    });
+    proc.kill('SIGTERM');
+  });
+}
+
 // Chromium time: microseconds since 1601-01-01.
 const chromiumNow = () => BigInt(Date.now()) * 1000n + 11644473600000000n;
 
@@ -219,7 +240,7 @@ export function createLoginService(opts: { dataDir: string }) {
   };
 
   const pushStatus = async (s: Session) => {
-    if (s.ended || !s.page) return;
+    if (s.ended || !s.page || !s.ctx) return;
     const title = await s.page.title().catch(() => '');
     s.status = { url: safeDisplayUrl(s.page.url()), title: title.slice(0, 200), loading: s.status.loading };
     sse(s, 'status', s.status);
@@ -249,7 +270,7 @@ export function createLoginService(opts: { dataDir: string }) {
     });
     page.on('close', () => {
       if (s.ended || s.page !== page) return;
-      const rest = s.ctx.pages().filter((p) => !p.isClosed());
+      const rest = (s.ctx?.pages() ?? []).filter((p) => !p.isClosed());
       if (rest.length) void attach(s, rest[rest.length - 1]);
       else if (s.mode === 'window') void end(s, 'The window was closed');
     });
@@ -257,7 +278,7 @@ export function createLoginService(opts: { dataDir: string }) {
   };
 
   const switchCast = async (s: Session, page: Page) => {
-    if (s.mode !== 'screencast') return void pushStatus(s);
+    if (s.mode !== 'screencast' || !s.ctx) return void pushStatus(s);
     await stopCast(s);
     await page.setViewportSize(s.viewport).catch(() => {});
     const cdp = await s.ctx.newCDPSession(page);
@@ -280,8 +301,9 @@ export function createLoginService(opts: { dataDir: string }) {
     for (const c of s.clients) c.end();
     s.clients.clear();
     await stopCast(s);
-    // Closing the context flushes the profile's cookie store to disk.
-    await s.ctx.close().catch(() => {});
+    // Closing the context (or letting Chromium shut down cleanly) flushes the cookie store to disk.
+    await s.ctx?.close().catch(() => {});
+    if (s.proc) await stopProcess(s.proc);
     s.release();
   }
 
@@ -310,6 +332,7 @@ export function createLoginService(opts: { dataDir: string }) {
       void lock.then((r) => r());
       throw new LoginError(409, 'That profile is busy (a sync is using it). Try again in a minute.');
     }
+    if (mode === 'window') return startWindow(profile, url, viewport, release);
     let ctx: BrowserContext;
     try {
       ctx = await launchProfileContext(profileDirFor(opts.dataDir, profile), { headless: mode === 'screencast', viewport: mode === 'screencast' ? viewport : null });
@@ -324,6 +347,7 @@ export function createLoginService(opts: { dataDir: string }) {
       profile,
       mode,
       ctx,
+      proc: null,
       page: null,
       cdp: null,
       viewport,
@@ -336,7 +360,7 @@ export function createLoginService(opts: { dataDir: string }) {
       ended: null,
     };
     sessions.set(s.id, s);
-    ctx.on('close', () => void end(s, mode === 'window' ? 'The window was closed' : 'The browser closed'));
+    ctx.on('close', () => void end(s, 'The browser closed'));
     ctx.on('page', (p) => {
       if (p !== s.page) void attach(s, p).catch(() => {});
     });
@@ -353,6 +377,43 @@ export function createLoginService(opts: { dataDir: string }) {
       throw new LoginError(500, `Could not open the login page: ${(e as Error).message.split('\n')[0]}`);
     }
     return { id: s.id, mode, profile };
+  }
+
+  /** A plain Chromium window on the app's profile. No CDP, no Playwright: the user drives it. */
+  function startWindow(profile: string, url: string, viewport: { width: number; height: number }, release: () => void) {
+    const exe = findChromium()!;
+    const dir = profileDirFor(opts.dataDir, profile);
+    let proc: ChildProcess;
+    try {
+      proc = spawn(exe, [`--user-data-dir=${dir}`, '--no-first-run', '--no-default-browser-check', '--disable-sync', ...LAUNCH_ARGS, '--new-window', url], {
+        stdio: 'ignore',
+        env: process.env,
+      });
+    } catch (e) {
+      release();
+      throw new LoginError(500, `Could not start Chromium: ${(e as Error).message.split('\n')[0]}`);
+    }
+    const s: Session = {
+      id: randomUUID(),
+      profile,
+      mode: 'window',
+      ctx: null,
+      proc,
+      page: null,
+      cdp: null,
+      viewport,
+      clients: new Set(),
+      lastFrame: null,
+      status: { url: safeDisplayUrl(url), title: '', loading: false },
+      release,
+      createdAt: Date.now(),
+      lastActive: Date.now(),
+      ended: null,
+    };
+    sessions.set(s.id, s);
+    proc.on('error', () => void end(s, 'Chromium could not start'));
+    proc.on('exit', () => void end(s, 'The window was closed'));
+    return { id: s.id, mode: 'window' as const, profile };
   }
 
   const get = (id: string) => {

@@ -137,8 +137,15 @@ export function LoginSheet({ profile, url, label, onDone, onClose }: { profile: 
 
   useEffect(() => {
     let alive = true;
-    loginApi.info().then((i) => alive && setDesktop(i.desktop)).catch(() => {});
-    void start('screencast');
+    // With a display, open a real Chromium window: X and Google refuse sign-in in a headless browser.
+    loginApi
+      .info()
+      .then((i) => {
+        if (!alive) return;
+        setDesktop(i.desktop);
+        void start(i.desktop ? 'window' : 'screencast');
+      })
+      .catch(() => alive && void start('screencast'));
     return () => {
       alive = false;
       // Unmounting without a decision closes the browser; the profile stays.
